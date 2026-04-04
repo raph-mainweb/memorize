@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-stone-50 text-slate-800 antialiased;
+  }
+  
+  /* Modern Glassmorphism utility */
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-sm;
+  }
+
+  /* Structural Typography bindings */
+  h1, h2, h3, h4, h5 {
+    @apply font-serif text-slate-900;
+  }
+}
