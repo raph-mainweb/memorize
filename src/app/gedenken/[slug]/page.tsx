@@ -48,7 +48,7 @@ export default async function MemorialPage({ params }: { params: { slug: string 
         <div className="text-center mb-20">
           <Heart className="w-5 h-5 mx-auto text-sage-400 mb-6 opacity-60 fill-sage-400/20" />
           <p className="font-serif text-xl md:text-2xl leading-relaxed text-slate-700 max-w-xl mx-auto">
-            "Wenn die Sonne des Lebens untergeht, leuchten die Sterne der Erinnerung."
+            &quot;Wenn die Sonne des Lebens untergeht, leuchten die Sterne der Erinnerung.&quot;
           </p>
           <div className="w-16 h-px bg-sage-200 mx-auto mt-12 mb-12"></div>
           

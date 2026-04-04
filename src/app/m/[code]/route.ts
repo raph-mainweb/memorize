@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: { code: st
     }
 
     // Must be assigned, shipped, or delivered. Safely extract slug:
-    // @ts-ignore - Supabase type casting array vs object representation inside Next
+    // @ts-expect-error - Supabase type casting array vs object representation inside Next
     const pageSlug = data.memorial_pages?.slug || (Array.isArray(data.memorial_pages) ? data.memorial_pages[0]?.slug : undefined);
     
     if (pageSlug) {

@@ -4,6 +4,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { sendStockAlertEmail } from '@/utils/resend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   apiVersion: '2023-10-16' as any,
 });
 
@@ -24,9 +25,10 @@ export async function POST(req: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET as string
     );
-  } catch (err: any) {
-    console.error(`[Webhook Error] Verify failed:`, err.message);
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error(`[Webhook Error] Verify failed:`, error.message);
+    return NextResponse.json({ error: `Webhook Error: ${error.message}` }, { status: 400 });
   }
 
   try {
@@ -39,9 +41,10 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (err: any) {
-    console.error(`[Webhook Logic Error]:`, err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error(`[Webhook Logic Error]:`, error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
@@ -100,7 +103,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       .from('medallion_orders')
       .insert({
         user_id: userId,
-        shipping_address: JSON.stringify(session.shipping_details) || 'Unknown',
+        // @ts-expect-error - Stripe Checkout Session shipping_details typing shifts with apiVersions
+        shipping_address: JSON.stringify(session.shipping_details || session.customer_details?.address) || 'Unknown',
         stripe_session_id: session.id,
       })
       .select('id')
