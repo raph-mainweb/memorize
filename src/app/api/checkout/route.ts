@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: Omit<Error, "name"> & { message: string }) {
+  } catch (err: unknown) {
+    const error = err as Error;
     console.error('Stripe Checkout Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
