@@ -1,14 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import PreviewMemorial from '@/components/builder/PreviewMemorial';
-import { Save, ChevronLeft, Image as ImageIcon, MapPin, Calendar, AlignLeft, LayoutPanelLeft, BadgeCheck, Camera, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Save, ChevronLeft, Image as ImageIcon, Calendar, AlignLeft, LayoutPanelLeft, BadgeCheck, Camera, Plus, Trash2, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BuilderClient({ initialData }: { initialData: any }) {
-  const router = useRouter();
   const supabase = createClient();
   const [memorial, setMemorial] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);

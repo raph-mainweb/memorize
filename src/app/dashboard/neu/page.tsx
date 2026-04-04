@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { ChevronLeft, ArrowRight, Heart, Sparkles } from 'lucide-react';
+import { ChevronLeft, ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function MemorialCreationWizard() {

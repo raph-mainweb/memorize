@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Heart, Calendar, MapPin, Image as ImageIcon } from 'lucide-react';
 
@@ -134,7 +135,7 @@ export default function PreviewMemorial({ data }: { data: any }) {
                   </div>
                   {img.caption && (
                     <p className="text-center text-xs text-slate-500 mt-3 mb-2 px-2 font-medium italic">
-                      "{img.caption}"
+                      &quot;{img.caption}&quot;
                     </p>
                   )}
                 </div>
