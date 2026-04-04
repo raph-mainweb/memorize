@@ -6,8 +6,10 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function sendMagicLink(formData: FormData) {
   const supabase = createClient()
-  let origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000'
-  origin = origin.startsWith('http') ? origin : `https://${origin}`
+  const origin = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:3000' 
+    : (process.env.NEXT_PUBLIC_SITE_URL || 'https://memorize-liart.vercel.app')
+  
   
   const email = formData.get('email') as string
 
@@ -38,8 +40,10 @@ export async function signout() {
 
 export async function signInWithGoogle() {
   const supabase = createClient()
-  let origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000'
-  origin = origin.startsWith('http') ? origin : `https://${origin}`
+  const origin = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:3000' 
+    : (process.env.NEXT_PUBLIC_SITE_URL || 'https://memorize-liart.vercel.app')
+  
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
