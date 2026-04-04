@@ -40,3 +40,26 @@ export async function signup(formData: FormData) {
   revalidatePath('/dashboard', 'layout')
   redirect('/dashboard/neu')
 }
+
+export async function signout() {
+  const supabase = createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
+  redirect('/')
+}
+
+export async function signInWithGoogle() {
+  const supabase = createClient()
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    },
+  })
+  
+  if (data.url) {
+    redirect(data.url)
+  }
+}

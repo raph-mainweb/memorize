@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Settings, QrCode, ArrowRight, Heart } from 'lucide-react';
+import { Plus, LogOut, QrCode, ArrowRight, Heart } from 'lucide-react';
 
 export default async function DashboardOverview() {
   const supabase = createClient();
@@ -26,7 +26,9 @@ export default async function DashboardOverview() {
         </Link>
         <div className="flex gap-4 items-center">
            <span className="text-xs font-medium text-slate-500 truncate max-w-[120px] sm:max-w-none bg-stone-100 px-3 py-1.5 rounded-full">{user.email}</span>
-           <button className="text-slate-400 hover:text-slate-900 transition"><Settings className="w-5 h-5"/></button>
+           <form action={async () => { "use server"; const { signout } = await import('@/app/auth/actions'); await signout(); }}>
+             <button type="submit" className="text-slate-400 hover:text-red-500 transition" title="Abmelden"><LogOut className="w-5 h-5"/></button>
+           </form>
         </div>
       </nav>
 
