@@ -11,6 +11,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
   const supabase = createClient();
   const [memorial, setMemorial] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
 
   // Handle generic input changes
@@ -117,6 +118,28 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
     }
   };
 
+  const handleUnlock = async () => {
+    setIsUnlocking(true);
+    await handleSave(); // save changes before paying
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memorial_id: memorial.id }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Fehler beim Bezahlen: ' + (data.error || 'Netzwerkfehler'));
+        setIsUnlocking(false);
+      }
+    } catch {
+      alert('Ein Fehler ist aufgetreten');
+      setIsUnlocking(false);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-stone-100 overflow-hidden font-sans">
       
@@ -176,7 +199,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
             <div className="bg-stone-50 rounded-[1.5rem] p-5 border border-stone-100 space-y-5">
               
               <div className="w-full">
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Titelbild (16:21)</label>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Titelbild (16:7)</label>
                 <div className="relative w-full h-32 bg-white border-2 border-dashed border-stone-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-sage-400 transition group overflow-hidden">
                   {uploadingField === 'title_image' ? (
                     <Loader2 className="w-6 h-6 text-sage-500 animate-spin" />
@@ -331,7 +354,11 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
                  <span>nachklang.ch/gedenken/{memorial.slug}</span>
               </div>
               {!memorial.is_live && (
-                <button className="bg-sage-600 hover:bg-sage-500 text-white text-xs px-4 py-1.5 rounded-full font-medium shadow-md transition whitespace-nowrap">
+                <button 
+                  onClick={handleUnlock}
+                  disabled={isUnlocking}
+                  className="bg-sage-600 hover:bg-sage-500 text-white text-xs px-4 py-1.5 rounded-full font-medium shadow-md transition whitespace-nowrap disabled:opacity-50">
+                  {isUnlocking ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}
                   Freischalten & Veröffentlichen (49.-)
                 </button>
               )}

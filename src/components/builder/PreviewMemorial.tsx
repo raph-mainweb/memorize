@@ -20,7 +20,7 @@ export default function PreviewMemorial({ data }: { data: any }) {
       {/* Title Image (16:21 aspect ratio container natively, but usually header is standard) 
           Wait, user specified 16:21 for the title image. That's a portrait format, heavily used in mobile. 
           Let's make a beautiful hero section with this image. */}
-      <div className="relative w-full aspect-[16/21] md:aspect-video bg-stone-200">
+      <div className="relative w-full aspect-[16/7] bg-stone-200">
         {data?.title_image ? (
           <img 
             src={data.title_image} 
@@ -30,7 +30,7 @@ export default function PreviewMemorial({ data }: { data: any }) {
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 bg-stone-200/50">
             <ImageIcon className="w-12 h-12 mb-3 opacity-50" />
-            <span className="text-sm font-medium tracking-widest uppercase">Titelbild (16:21)</span>
+            <span className="text-sm font-medium tracking-widest uppercase">Titelbild (16:7)</span>
           </div>
         )}
         
