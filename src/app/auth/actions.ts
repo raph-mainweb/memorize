@@ -6,7 +6,8 @@ import { createClient } from '@/utils/supabase/server'
 
 export async function sendMagicLink(formData: FormData) {
   const supabase = createClient()
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  let origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000'
+  origin = origin.startsWith('http') ? origin : `https://${origin}`
   
   const email = formData.get('email') as string
 
@@ -37,7 +38,8 @@ export async function signout() {
 
 export async function signInWithGoogle() {
   const supabase = createClient()
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  let origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000'
+  origin = origin.startsWith('http') ? origin : `https://${origin}`
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
