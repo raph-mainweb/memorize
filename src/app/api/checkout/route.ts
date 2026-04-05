@@ -56,11 +56,12 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
+      customer_email: user.email ?? undefined,
       success_url: `${origin}/dashboard/edit/${memorial_id}?success=true`,
       cancel_url: `${origin}/dashboard/edit/${memorial_id}?canceled=true`,
-      client_reference_id: user.id, // Picked up by webhook
+      client_reference_id: user.id,
       metadata: {
-        memorial_id: memorial_id, // Picked up by webhook to unlock page
+        memorial_id: memorial_id,
         unlock: 'true',
       },
     });

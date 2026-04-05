@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
+      customer_email: user.email ?? undefined,
       success_url: `${origin}/dashboard/edit/${memorial_id}?success=true`,
       cancel_url: `${origin}/dashboard?canceled=true`,
       client_reference_id: user.id,

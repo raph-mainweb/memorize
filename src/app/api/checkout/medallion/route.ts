@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
+      customer_email: user.email ?? undefined,
       success_url: memorial_id
         ? `${origin}/dashboard/edit/${memorial_id}?success=medallion`
         : `${origin}/dashboard?success=medallion`,
