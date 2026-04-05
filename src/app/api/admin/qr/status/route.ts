@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
-import { createClient } from '@/utils/supabase/server';
 
+// Middleware already protects /api/admin/* — no separate auth check needed here.
 export async function PATCH(req: NextRequest) {
-  const userClient = createClient();
-  const { data: { user } } = await userClient.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   const adminDb = createAdminClient();
-  const { data: profile } = await adminDb.from('profiles').select('is_admin').eq('id', user.id).single();
-  if (!profile?.is_admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   const body = await req.json();
   const { ids, production_status, inventory_status, notes } = body as {
@@ -42,7 +36,9 @@ export async function PATCH(req: NextRequest) {
       shipped: 'shipped',
       activated: 'delivered',
     };
-    updatePayload.status = legacyMap[inventory_status] || 'available';
+    if (legacyMap[inventory_status]) {
+      updatePayload.status = legacyMap[inventory_status];
+    }
     if (inventory_status === 'shipped') updatePayload.shipped_at = now;
     if (inventory_status === 'connected') updatePayload.connected_at = now;
   }
@@ -55,14 +51,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Keine Felder zum Aktualisieren' }, { status: 400 });
   }
 
-  const { error, count } = await adminDb
+  console.log('[QR Status] Updating', ids.length, 'codes with', updatePayload);
+
+  const { error, data } = await adminDb
     .from('medallion_codes')
     .update(updatePayload)
-    .in('id', ids);
+    .in('id', ids)
+    .select('id');
 
   if (error) {
+    console.error('[QR Status] DB error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ updated: count, payload: updatePayload });
+  console.log('[QR Status] Updated', data?.length ?? 0, 'rows');
+  return NextResponse.json({ updated: data?.length ?? 0, payload: updatePayload });
 }

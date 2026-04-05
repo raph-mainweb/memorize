@@ -171,21 +171,37 @@ export default function MedaillonManager({ products, initialCodes }: Omit<Props,
     setIsUploading(false);
   }
 
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkSuccess, setBulkSuccess] = useState<string | null>(null);
+
   // --- Bulk status update ---
   async function handleBulkUpdate() {
     if (selectedIds.size === 0 || (!bulkProd && !bulkInv)) return;
     setIsBulkUpdating(true);
-    await fetch('/api/admin/qr/status', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ids: Array.from(selectedIds),
-        ...(bulkProd ? { production_status: bulkProd } : {}),
-        ...(bulkInv ? { inventory_status: bulkInv } : {}),
-      }),
-    });
-    // Refresh codes (simple approach: reload page data)
-    window.location.reload();
+    setBulkError(null);
+    setBulkSuccess(null);
+    try {
+      const res = await fetch('/api/admin/qr/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: Array.from(selectedIds),
+          ...(bulkProd ? { production_status: bulkProd } : {}),
+          ...(bulkInv ? { inventory_status: bulkInv } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBulkError(data.error || `Fehler ${res.status}`);
+        setIsBulkUpdating(false);
+        return;
+      }
+      setBulkSuccess(`${data.updated} Code(s) aktualisiert`);
+      setTimeout(() => window.location.reload(), 800);
+    } catch (e) {
+      setBulkError(`Netzwerkfehler: ${e instanceof Error ? e.message : 'Unbekannt'}`);
+      setIsBulkUpdating(false);
+    }
   }
 
   // Filter codes for inventar tab
@@ -472,27 +488,39 @@ export default function MedaillonManager({ products, initialCodes }: Omit<Props,
 
           {/* Bulk actions */}
           {selectedIds.size > 0 && (
-            <div className="bg-slate-900 text-white rounded-2xl px-6 py-3 mb-4 flex items-center gap-4 flex-wrap">
-              <span className="text-sm font-medium">{selectedIds.size} ausgewählt</span>
-              <select value={bulkProd} onChange={e => setBulkProd(e.target.value)} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs border border-slate-700 focus:outline-none">
-                <option value="">Prod.-Status setzen…</option>
-                <option value="generated">Generiert</option>
-                <option value="exported">Exportiert</option>
-                <option value="produced">Produziert</option>
-              </select>
-              <select value={bulkInv} onChange={e => setBulkInv(e.target.value)} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs border border-slate-700 focus:outline-none">
-                <option value="">Lager-Status setzen…</option>
-                <option value="in_stock">Im Lager</option>
-                <option value="reserved">Reserviert</option>
-                <option value="assigned">Zugewiesen</option>
-                <option value="connected">Verbunden</option>
-                <option value="shipped">Versendet</option>
-                <option value="activated">Aktiviert</option>
-              </select>
-              <button onClick={handleBulkUpdate} disabled={isBulkUpdating || (!bulkProd && !bulkInv)} className="bg-white text-slate-900 px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-stone-100 transition disabled:opacity-40">
-                {isBulkUpdating ? 'Aktualisiere…' : 'Übernehmen'}
-              </button>
-              <button onClick={() => setSelectedIds(new Set())} className="text-slate-400 hover:text-white text-xs">Abbrechen</button>
+            <div className="mb-4 space-y-2">
+              <div className="bg-slate-900 text-white rounded-2xl px-6 py-3 flex items-center gap-4 flex-wrap">
+                <span className="text-sm font-medium">{selectedIds.size} ausgewählt</span>
+                <select value={bulkProd} onChange={e => setBulkProd(e.target.value)} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs border border-slate-700 focus:outline-none">
+                  <option value="">Prod.-Status setzen…</option>
+                  <option value="generated">Generiert</option>
+                  <option value="exported">Exportiert</option>
+                  <option value="produced">Produziert</option>
+                </select>
+                <select value={bulkInv} onChange={e => setBulkInv(e.target.value)} className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs border border-slate-700 focus:outline-none">
+                  <option value="">Lager-Status setzen…</option>
+                  <option value="in_stock">Im Lager</option>
+                  <option value="reserved">Reserviert</option>
+                  <option value="assigned">Zugewiesen</option>
+                  <option value="connected">Verbunden</option>
+                  <option value="shipped">Versendet</option>
+                  <option value="activated">Aktiviert</option>
+                </select>
+                <button onClick={handleBulkUpdate} disabled={isBulkUpdating || (!bulkProd && !bulkInv)} className="bg-white text-slate-900 px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-stone-100 transition disabled:opacity-40">
+                  {isBulkUpdating ? 'Aktualisiere…' : 'Übernehmen'}
+                </button>
+                <button onClick={() => { setSelectedIds(new Set()); setBulkError(null); setBulkSuccess(null); }} className="text-slate-400 hover:text-white text-xs">Abbrechen</button>
+              </div>
+              {bulkError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-2.5 text-sm">
+                  <strong>Fehler:</strong> {bulkError}
+                </div>
+              )}
+              {bulkSuccess && (
+                <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-2.5 text-sm font-medium">
+                  ✓ {bulkSuccess} — Seite wird aktualisiert…
+                </div>
+              )}
             </div>
           )}
 
