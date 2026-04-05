@@ -67,3 +67,44 @@ BEGIN
         WHEN duplicate_column THEN null;
     END;
 END $$;
+
+-- 5. Extended medallion_codes columns for full QR lifecycle tracking
+-- Run this in Supabase SQL Editor
+DO $$
+BEGIN
+    -- Unique constraint on code column (tokens must be unique)
+    BEGIN
+        ALTER TABLE medallion_codes ADD CONSTRAINT medallion_codes_code_unique UNIQUE (code);
+    EXCEPTION WHEN duplicate_table THEN null;
+    END;
+
+    -- Full redirect URL stored for convenience
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS qr_url TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+
+    -- Production lifecycle
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS production_status TEXT DEFAULT 'generated' CHECK (production_status IN ('generated','exported','produced')); EXCEPTION WHEN duplicate_column THEN null; END;
+
+    -- Inventory / assignment lifecycle
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS inventory_status TEXT DEFAULT 'in_stock' CHECK (inventory_status IN ('in_stock','reserved','assigned','connected','shipped','activated')); EXCEPTION WHEN duplicate_column THEN null; END;
+
+    -- Who it's assigned to (customer user_id)
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS assigned_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL; EXCEPTION WHEN duplicate_column THEN null; END;
+
+    -- Which memorial page it's linked to
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS assigned_page_id UUID REFERENCES memorial_pages(id) ON DELETE SET NULL; EXCEPTION WHEN duplicate_column THEN null; END;
+
+    -- Lifecycle timestamps
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS exported_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS produced_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS connected_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN null; END;
+
+    -- Optional metadata
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS serial_number TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS notes TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+END $$;
+
+-- Backfill qr_url for existing codes that don't have one yet
+UPDATE medallion_codes
+SET qr_url = concat('https://memorize-liart.vercel.app/m/', code)
+WHERE qr_url IS NULL AND code IS NOT NULL;
+
