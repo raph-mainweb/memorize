@@ -15,27 +15,21 @@ export default function GalleryUploader({ productId, initialImages = [], onChang
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  const uploadFile = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (productId) formData.append('product_id', productId);
-
-    const res = await fetch('/api/admin/products/upload-image', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Upload fehlgeschlagen');
-    return data.url as string;
-  };
-
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
     if (!validFiles.length) return;
 
     setUploading(true);
     try {
+      const uploadFile = async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (productId) formData.append('product_id', productId);
+        const res = await fetch('/api/admin/products/upload-image', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload fehlgeschlagen');
+        return data.url as string;
+      };
       const urls = await Promise.all(validFiles.map(uploadFile));
       const updated = [...images, ...urls];
       setImages(updated);

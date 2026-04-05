@@ -69,7 +69,7 @@ export default async function MedaillonsPage() {
                     )}
                     {additionalImages.length > 0 && (
                       <div className="grid grid-cols-3 gap-3">
-                        {additionalImages.map((img, i) => (
+                        {additionalImages.map((img: string, i: number) => (
                           <div key={i} className="relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200">
                             <Image src={img} alt={`${product.title} ${i + 2}`} fill className="object-cover" />
                           </div>
