@@ -76,22 +76,13 @@ export default async function ProductDetailPage({ params }: Props) {
               <span className="text-slate-400 text-sm">inkl. Versand & Gravur</span>
             </div>
 
-            {/* Stock indicator */}
-            <div className="flex items-center gap-2 mb-6">
-              {availableStock > 0 ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-                  <span className="text-sm text-emerald-700 font-medium">
-                    {availableStock} {availableStock === 1 ? 'Stück' : 'Stück'} verfügbar
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
-                  <span className="text-sm text-red-600 font-medium">Ausverkauft</span>
-                </>
-              )}
-            </div>
+            {/* Stock indicator — only shown when out of stock */}
+            {availableStock === 0 && (
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+                <span className="text-sm text-red-600 font-medium">Ausverkauft</span>
+              </div>
+            )}
 
             {/* CTA */}
             <div className="flex flex-col gap-3 mb-8">

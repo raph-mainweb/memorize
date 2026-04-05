@@ -108,3 +108,20 @@ UPDATE medallion_codes
 SET qr_url = concat('https://memorize-liart.vercel.app/m/', code)
 WHERE qr_url IS NULL AND code IS NOT NULL;
 
+
+-- 6. Shipping address fields on profiles
+-- Run this in Supabase SQL Editor
+DO $$
+BEGIN
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS first_name TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_name TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_line1 TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_line2 TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS postal_code TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS city TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'CH'; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+END $$;
+
+-- Also run schema reload after:
+-- NOTIFY pgrst, 'reload schema';

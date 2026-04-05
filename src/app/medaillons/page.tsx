@@ -93,11 +93,7 @@ export default async function MedaillonsPage() {
 
                   {/* Product Info */}
                   <div className="p-5">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-serif text-xl text-slate-900 group-hover:text-sage-700 transition">{product.title}</h3>
-                      {/* Stock dot */}
-                      <span className={`mt-1.5 flex-shrink-0 w-2 h-2 rounded-full ${inStock ? 'bg-emerald-400' : 'bg-red-300'}`} title={inStock ? `${stock} verfügbar` : 'Ausverkauft'} />
-                    </div>
+                    <h3 className="font-serif text-xl text-slate-900 mb-1 group-hover:text-sage-700 transition">{product.title}</h3>
                     {product.short_description && (
                       <p className="text-slate-500 text-sm line-clamp-2 mb-3 font-light">{product.short_description}</p>
                     )}
@@ -105,9 +101,11 @@ export default async function MedaillonsPage() {
                       <span className="text-lg font-medium text-slate-900">
                         CHF {((product.price_in_cents || 0) / 100).toFixed(2)}
                       </span>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${inStock ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-500'}`}>
-                        {inStock ? `${stock} verfügbar` : 'Ausverkauft'}
-                      </span>
+                      {!inStock && (
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-stone-100 text-stone-500">
+                          Ausverkauft
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>

@@ -25,6 +25,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Bestellungen
             </Link>
             <Link 
+              href="/admin/customers" 
+              className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
+            >
+              Kunden
+            </Link>
+            <Link 
               href="/admin/medallions" 
               className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
             >
