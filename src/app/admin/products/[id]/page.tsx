@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import ProductForm from '../ProductForm';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { Suspense } from 'react';
+import SavedToast from './SavedToast';
 
 interface EditProductPageProps {
   params: { id: string };
@@ -22,6 +24,11 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
   return (
     <div className="p-8 md:p-12">
+      {/* Toast for save feedback */}
+      <Suspense fallback={null}>
+        <SavedToast />
+      </Suspense>
+
       <header className="mb-10">
         <Link href="/admin/products" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition mb-6">
           <ArrowLeft className="w-4 h-4" /> Zurück zu Produkte
