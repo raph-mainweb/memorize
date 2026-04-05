@@ -5,20 +5,6 @@ export default function LandingPage() {
   return (
     <div className="flex-grow flex flex-col items-center bg-stone-50 overflow-hidden">
       
-      {/* Navigation */}
-      <nav className="w-full max-w-7xl px-6 lg:px-8 h-24 flex items-center justify-between z-50 absolute top-0">
-        <div className="font-serif text-2xl font-bold tracking-tight text-slate-900 group flex items-center gap-2">
-          Nachklang <span className="text-sage-500 font-normal italic group-hover:text-sage-600 transition-colors">CH</span>
-        </div>
-        <div className="flex items-center gap-6">
-          <Link href="/auth/login" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-            Anmelden
-          </Link>
-          <Link href="/dashboard/neu" className="text-sm font-medium bg-slate-900 text-white px-6 py-2.5 rounded-full hover:bg-slate-800 transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md">
-            Gedenkseite erstellen
-          </Link>
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="relative w-full px-6 lg:px-8 pt-40 pb-20 md:pt-48 md:pb-28 flex flex-col items-center text-center">
