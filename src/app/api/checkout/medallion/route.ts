@@ -70,9 +70,12 @@ export async function POST(req: NextRequest) {
       }],
       mode: 'payment',
       customer_email: user.email ?? undefined,
+      // Route through /checkout/fulfill so the server can assign the medallion
+      // immediately on return — no webhook dependency
+      // {CHECKOUT_SESSION_ID} is a Stripe template variable replaced automatically
       success_url: memorial_id
-        ? `${origin}/dashboard/edit/${memorial_id}?success=medallion`
-        : `${origin}/dashboard?success=medallion`,
+        ? `${origin}/checkout/fulfill?session_id={CHECKOUT_SESSION_ID}&memorial_id=${memorial_id}`
+        : `${origin}/checkout/fulfill?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/medaillons?canceled=true`,
       client_reference_id: user.id,
       metadata: {
