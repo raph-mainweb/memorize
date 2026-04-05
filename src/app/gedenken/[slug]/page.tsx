@@ -1,51 +1,29 @@
 import { createAdminClient } from '@/utils/supabase/admin';
-import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import { Heart, MessageSquare } from 'lucide-react';
 
-export default async function MemorialPage({ params }: { params: { slug: string } }) {
+// This is the STRICTLY PUBLIC route.
+// It only renders if is_live = true.
+// There are NO exceptions — not even for the owner.
+// Draft pages must use /dashboard/preview/[id] instead.
+
+export default async function PublicMemorialPage({ params }: { params: { slug: string } }) {
   const supabase = createAdminClient();
-  
+
   const { data: memorial } = await supabase
     .from('memorial_pages')
     .select('*')
     .eq('slug', params.slug)
+    .eq('is_live', true)   // ← Hard filter: only show published pages
     .single();
 
+  // If not found OR not live → 404. No hints that a draft exists.
   if (!memorial) {
     notFound();
   }
 
-  // If page is NOT live, only allow the owner to see it
-  if (!memorial.is_live) {
-    const userClient = createClient();
-    const { data: { user } } = await userClient.auth.getUser();
-    
-    // Not logged in or not the owner → 404
-    if (!user || user.id !== memorial.user_id) {
-      notFound();
-    }
-  }
-
-  const isPreview = !memorial.is_live;
-
   return (
     <div className="min-h-screen bg-[#faf9f6] flex flex-col relative selection:bg-sage-200">
-      
-      {/* Private preview banner (only visible to owner) */}
-      {isPreview && (
-        <div className="bg-slate-900 text-white text-xs sm:text-sm font-medium py-3 px-4 text-center sticky top-0 z-50 flex justify-center items-center gap-4">
-          <span className="opacity-90 font-light tracking-wide">
-            🔒 Private Vorschau — nur für dich sichtbar. Aktiviere die Seite, um sie öffentlich zugänglich zu machen.
-          </span>
-          <a
-            href={`/dashboard/edit/${memorial.id}`}
-            className="bg-white text-slate-900 px-4 py-1.5 rounded-full text-xs font-semibold hover:bg-sage-100 transition shadow-sm whitespace-nowrap"
-          >
-            Freischalten →
-          </a>
-        </div>
-      )}
 
       {/* Hero Image Area */}
       <div className="relative w-full h-[45vh] md:h-[60vh] bg-stone-300 overflow-hidden">
@@ -54,7 +32,7 @@ export default async function MemorialPage({ params }: { params: { slug: string 
           <img src={memorial.title_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/80" />
-        <div className="absolute bottom-0 w-full p-8 md:p-16 text-center animate-slide-up">
+        <div className="absolute bottom-0 w-full p-8 md:p-16 text-center">
           <h1 className="text-4xl md:text-6xl font-serif text-white tracking-wide drop-shadow-md mb-2">
             {memorial.name}
           </h1>
@@ -71,9 +49,7 @@ export default async function MemorialPage({ params }: { params: { slug: string 
         </div>
       </div>
 
-      <main className="flex-grow max-w-3xl mx-auto w-full px-6 py-12 md:py-24 animate-fade-in" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
-        
-        {/* Biography */}
+      <main className="flex-grow max-w-3xl mx-auto w-full px-6 py-12 md:py-24">
         <div className="text-center mb-20">
           <Heart className="w-5 h-5 mx-auto text-sage-400 mb-6 opacity-60 fill-sage-400/20" />
           {memorial.biography ? (
@@ -96,11 +72,9 @@ export default async function MemorialPage({ params }: { params: { slug: string 
           </div>
           <div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
             <p className="text-slate-500 font-light text-sm">Noch keine Einträge vorhanden.</p>
-            {memorial.is_live && (
-              <button className="mt-6 border border-sage-200 bg-white text-sage-800 px-6 py-2.5 rounded-full text-sm font-medium shadow-sm hover:bg-sage-50 transition">
-                Erinnerung teilen
-              </button>
-            )}
+            <button className="mt-6 border border-sage-200 bg-white text-sage-800 px-6 py-2.5 rounded-full text-sm font-medium shadow-sm hover:bg-sage-50 transition">
+              Erinnerung teilen
+            </button>
           </div>
         </div>
       </main>

@@ -92,12 +92,12 @@ export default async function DashboardOverview() {
 
                 {/* Actions */}
                 <div className="mt-auto border-t border-stone-100 pt-4 flex gap-2">
-                  {/* Preview button — always visible to owner, private for drafts */}
+                  {/* Preview: /dashboard/preview/[id] for drafts (owner-only), /gedenken/[slug] for live */}
                   <Link
-                    href={`/gedenken/${memorial.slug}`}
+                    href={memorial.is_live ? `/gedenken/${memorial.slug}` : `/dashboard/preview/${memorial.id}`}
                     target="_blank"
                     className="flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-slate-500 text-sm hover:bg-stone-50 hover:text-slate-800 transition shadow-sm"
-                    title="Seite als Vorschau ansehen"
+                    title={memorial.is_live ? 'Öffentliche Seite ansehen' : 'Private Vorschau ansehen'}
                   >
                     <Eye className="w-3.5 h-3.5" />
                   </Link>
