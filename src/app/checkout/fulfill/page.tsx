@@ -12,12 +12,9 @@ interface FulfillPageProps {
 export default async function CheckoutFulfillPage({ searchParams }: FulfillPageProps) {
   const { session_id, memorial_id: urlMemorialId } = searchParams;
 
-  console.log(`[Fulfill] Called with session_id=${session_id}, memorial_id=${urlMemorialId}`);
+  console.log(`[Fulfill] START session_id=${session_id}`);
 
-  if (!session_id) {
-    console.error('[Fulfill] No session_id in URL');
-    redirect('/dashboard?error=no_session');
-  }
+  if (!session_id) redirect('/dashboard?error=no_session');
 
   const db = createAdminClient();
 
@@ -25,170 +22,152 @@ export default async function CheckoutFulfillPage({ searchParams }: FulfillPageP
   let session: Stripe.Checkout.Session;
   try {
     session = await stripe.checkout.sessions.retrieve(session_id);
-    console.log(`[Fulfill] Session retrieved: payment_status=${session.payment_status}, type=${session.metadata?.type}`);
   } catch (err) {
-    console.error('[Fulfill] Failed to retrieve session:', err);
+    console.error('[Fulfill] Stripe retrieve failed:', err);
     redirect('/dashboard?error=invalid_session');
   }
 
-  if (session.payment_status !== 'paid') {
-    console.error(`[Fulfill] Payment not complete: ${session.payment_status}`);
-    redirect('/dashboard?error=payment_not_complete');
-  }
+  if (session.payment_status !== 'paid') redirect('/dashboard?error=payment_not_complete');
 
   const sessionType = session.metadata?.type;
   const userId = session.client_reference_id;
   const memorialId = session.metadata?.memorial_id || urlMemorialId;
   const productId = session.metadata?.product_id;
+  const shippingJson = session.metadata?.shipping_json;
 
-  console.log(`[Fulfill] userId=${userId} memorialId=${memorialId} productId=${productId} type=${sessionType}`);
+  console.log(`[Fulfill] paid ✓ | type=${sessionType} | user=${userId} | memorial=${memorialId}`);
 
-  if (!userId) {
-    console.error('[Fulfill] Missing client_reference_id');
-    redirect('/dashboard?error=missing_user');
-  }
+  if (!userId) redirect('/dashboard?error=missing_user');
 
-  // 2. Idempotency: check if already fulfilled (use stripe_session_id if column exists)
+  // 2. Idempotency check (skip if column missing)
   try {
-    const { data: existingOrder } = await db
+    const { data: existing } = await db
       .from('medallion_orders')
       .select('id')
       .eq('stripe_session_id', session_id)
       .maybeSingle();
-
-    if (existingOrder) {
-      console.log(`[Fulfill] Already fulfilled (idempotency check), redirecting.`);
+    if (existing) {
+      console.log('[Fulfill] Already fulfilled, redirecting');
       redirect(memorialId ? `/dashboard/edit/${memorialId}?success=medallion` : '/dashboard?success=medallion');
     }
-  } catch {
-    // stripe_session_id column might not exist — continue without idempotency check
-    console.warn('[Fulfill] Could not check idempotency (column may not exist), proceeding.');
-  }
+  } catch { console.warn('[Fulfill] Idempotency check skipped'); }
 
-  // 3. Medallion assignment
+  // 3. Medallion fulfillment
   if (sessionType === 'medallion') {
+    // --- 3a. Find an available code ---
     let codeId: string | null = null;
-    let codeCode: string | null = null;
 
-    // 3a. Find code for this product first
+    // Try by product + inventory_status
     if (productId) {
-      const { data } = await db
-        .from('medallion_codes')
-        .select('id, code')
-        .eq('product_id', productId)
-        .eq('inventory_status', 'in_stock')
-        .limit(1)
-        .maybeSingle();
-      if (data) { codeId = data.id; codeCode = data.code; }
+      const { data } = await db.from('medallion_codes').select('id')
+        .eq('product_id', productId).eq('inventory_status', 'in_stock').limit(1).maybeSingle();
+      if (data?.id) codeId = data.id;
     }
-
-    // 3b. Fallback: any available code
+    // Fallback: any in_stock
     if (!codeId) {
-      const { data } = await db
-        .from('medallion_codes')
-        .select('id, code')
-        .eq('inventory_status', 'in_stock')
-        .limit(1)
-        .maybeSingle();
-      if (data) { codeId = data.id; codeCode = data.code; }
+      const { data } = await db.from('medallion_codes').select('id')
+        .eq('inventory_status', 'in_stock').limit(1).maybeSingle();
+      if (data?.id) codeId = data.id;
     }
-
-    // 3c. Last fallback: original status field
+    // Last fallback: original status=available field
     if (!codeId) {
-      const { data } = await db
-        .from('medallion_codes')
-        .select('id, code')
-        .eq('status', 'available')
-        .limit(1)
-        .maybeSingle();
-      if (data) { codeId = data.id; codeCode = data.code; }
+      const { data } = await db.from('medallion_codes').select('id')
+        .eq('status', 'available').limit(1).maybeSingle();
+      if (data?.id) codeId = data.id;
     }
 
-    console.log(`[Fulfill] Code found: id=${codeId} code=${codeCode}`);
+    console.log(`[Fulfill] Code found: ${codeId}`);
 
-    const now = new Date().toISOString();
-
+    // --- 3b. Assign the code --- (each field separately to isolate failures)
     if (codeId) {
-      // 3d. Assign the code
-      const { error: assignErr } = await db
-        .from('medallion_codes')
-        .update({
-          status: 'assigned',
-          inventory_status: 'assigned',
-          memorial_id: memorialId || null,        // original schema field
-          assigned_page_id: memorialId || null,   // new field
-          assigned_user_id: userId,               // new field
-          assigned_at: now,
-          connected_at: now,
-        })
+      const now = new Date().toISOString();
+
+      // Update base fields (these exist in original schema)
+      const { error: e1 } = await db.from('medallion_codes')
+        .update({ status: 'assigned', memorial_id: memorialId || null, assigned_at: now })
+        .eq('id', codeId);
+      if (e1) console.error('[Fulfill] Base code update error:', e1.message);
+      else console.log('[Fulfill] ✓ Code base fields assigned');
+
+      // Update new lifecycle fields (may not exist — ignore errors)
+      await db.from('medallion_codes')
+        .update({ inventory_status: 'assigned' })
         .eq('id', codeId);
 
-      if (assignErr) {
-        console.error(`[Fulfill] Code assign error (trying with base fields):`, assignErr.message);
-        // Retry with only original schema fields
-        await db.from('medallion_codes').update({
-          status: 'assigned',
-          memorial_id: memorialId || null,
-          assigned_at: now,
-        }).eq('id', codeId);
-      } else {
-        console.log(`[Fulfill] ✓ Code ${codeCode} assigned to user ${userId} / memorial ${memorialId}`);
-      }
+      await db.from('medallion_codes')
+        .update({ assigned_user_id: userId })
+        .eq('id', codeId);
+
+      await db.from('medallion_codes')
+        .update({ assigned_page_id: memorialId || null, connected_at: now })
+        .eq('id', codeId);
     } else {
-      console.error(`[Fulfill] ✗ No available code found for product ${productId}!`);
+      console.error('[Fulfill] ✗ No available code found!');
     }
 
-    // 3e. Save shipping from metadata
-    const shippingJson = session.metadata?.shipping_json;
-    if (shippingJson) {
-      try {
-        const s = JSON.parse(shippingJson);
-        const { error: profileErr } = await db.from('profiles').update({
-          first_name: s.first_name || null,
-          last_name: s.last_name || null,
-          address_line1: s.address_line1 || null,
-          address_line2: s.address_line2 || null,
-          postal_code: s.postal_code || null,
-          city: s.city || null,
-          country: s.country || null,
-          phone: s.phone || null,
-        }).eq('id', userId);
-        if (profileErr) console.error('[Fulfill] Profile save error:', profileErr.message);
-        else console.log(`[Fulfill] ✓ Shipping saved to profile`);
-      } catch (e) {
-        console.error('[Fulfill] Failed to parse shipping_json:', e);
-      }
-    }
+    // --- 3c. Create order (try multiple insertions, increasingly minimal) ---
+    const shippingStr = shippingJson || JSON.stringify(session.customer_details?.address) || 'Unbekannt';
 
-    // 3f. Create order record — try full insert first, fallback to minimal
-    const fullInsert = {
+    // Attempt 1: Full insert with all fields
+    const { error: err1 } = await db.from('medallion_orders').insert({
       user_id: userId,
       medallion_code_id: codeId,
-      shipping_address: shippingJson || JSON.stringify(session.customer_details?.address) || 'Unbekannt',
+      shipping_address: shippingStr,
       memorial_id: memorialId || null,
       product_id: productId || null,
       status: codeId ? 'processing' : 'pending_stock',
       stripe_session_id: session_id,
-    };
+    });
 
-    const { error: insertErr } = await db.from('medallion_orders').insert(fullInsert);
-    if (insertErr) {
-      console.error(`[Fulfill] Full insert failed (${insertErr.message}), trying minimal...`);
-      // Minimal insert with only original schema columns
-      const { error: minErr } = await db.from('medallion_orders').insert({
+    if (err1) {
+      console.error('[Fulfill] Full insert failed:', err1.message);
+
+      // Attempt 2: Without medallion_code_id (in case it's not in cache)
+      const { error: err2 } = await db.from('medallion_orders').insert({
         user_id: userId,
-        medallion_code_id: codeId,
-        shipping_address: shippingJson || 'Unbekannt',
+        shipping_address: shippingStr,
+        memorial_id: memorialId || null,
+        product_id: productId || null,
+        status: codeId ? 'processing' : 'pending_stock',
+        stripe_session_id: session_id,
       });
-      if (minErr) console.error('[Fulfill] Minimal insert also failed:', minErr.message);
-      else console.log('[Fulfill] ✓ Minimal order created (run SQL migration 7 for full support)');
+
+      if (err2) {
+        console.error('[Fulfill] Insert without code_id failed:', err2.message);
+
+        // Attempt 3: Absolute minimum (original schema only)
+        const { error: err3 } = await db.from('medallion_orders').insert({
+          user_id: userId,
+          shipping_address: shippingStr,
+        });
+        if (err3) console.error('[Fulfill] ✗ All inserts failed:', err3.message);
+        else console.log('[Fulfill] ✓ Minimal order created (NOTIFY pgrst required for full schema)');
+      } else {
+        console.log('[Fulfill] ✓ Order created without medallion_code_id ref');
+      }
     } else {
-      console.log(`[Fulfill] ✓ Full order created`);
+      console.log('[Fulfill] ✓ Full order created');
+    }
+
+    // --- 3d. Save shipping to profile ---
+    if (shippingJson) {
+      try {
+        const s = JSON.parse(shippingJson);
+        const { error: pe } = await db.from('profiles').update({
+          first_name: s.first_name || null, last_name: s.last_name || null,
+          address_line1: s.address_line1 || null, address_line2: s.address_line2 || null,
+          postal_code: s.postal_code || null, city: s.city || null,
+          country: s.country || null, phone: s.phone || null,
+        }).eq('id', userId);
+        if (pe) console.error('[Fulfill] Profile update failed:', pe.message);
+        else console.log('[Fulfill] ✓ Shipping saved to profile');
+      } catch (e) { console.error('[Fulfill] shipping_json parse error:', e); }
     }
   }
 
-  // 4. Redirect to success
-  const dest = memorialId ? `/dashboard/edit/${memorialId}?success=medallion` : '/dashboard?success=medallion';
-  console.log(`[Fulfill] Redirecting to ${dest}`);
+  const dest = memorialId
+    ? `/dashboard/edit/${memorialId}?success=medallion`
+    : '/dashboard?success=medallion';
+  console.log(`[Fulfill] Done → ${dest}`);
   redirect(dest);
 }
