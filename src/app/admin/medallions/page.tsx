@@ -4,14 +4,30 @@ import MedaillonManager from './MedaillonManager';
 export default async function MedallionsAdminPage() {
   const db = createAdminClient();
 
-  const [{ data: products }, { data: codes }, { count: totalAvailable }] = await Promise.all([
-    db.from('products').select('id, title').order('title'),
-    db.from('medallion_codes')
-      .select('id, code, qr_url, batch, status, production_status, inventory_status, serial_number, notes, created_at, exported_at, produced_at, connected_at, shipped_at, products(title)')
-      .order('created_at', { ascending: false })
-      .limit(500),
-    db.from('medallion_codes').select('*', { count: 'exact', head: true }).eq('inventory_status', 'in_stock'),
-  ]);
+  // Fetch products (always safe — no new columns)
+  const { data: products } = await db
+    .from('products')
+    .select('id, title')
+    .order('title');
+
+  // Fetch all codes — use '*' so PostgREST schema cache misses don't silently drop rows
+  const { data: codes, error: codesError } = await db
+    .from('medallion_codes')
+    .select('*, products(title)')
+    .order('created_at', { ascending: false })
+    .limit(500);
+
+  if (codesError) {
+    console.error('[Admin/Medallions] Failed to fetch codes:', codesError.message);
+  }
+
+  // Count available stock using legacy 'status' field (always existed — safe)
+  const { count: totalAvailable } = await db
+    .from('medallion_codes')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'available');
+
+
 
   return (
     <div className="p-8 md:p-12">
