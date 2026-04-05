@@ -7,7 +7,7 @@ import { Menu, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ email?: string; id?: string } | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const supabase = createClient();
@@ -63,7 +63,7 @@ export default function Navbar() {
         {/* Center: Desktop Links */}
         <div className="hidden md:flex items-center gap-8">
           <Link href="/wie-es-funktioniert" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
-            Wie funktioniert's
+            Wie funktioniert&apos;s
           </Link>
           <Link href="/medaillons" className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
             Medaillons
@@ -140,7 +140,7 @@ export default function Navbar() {
       {isMobileOpen && (
         <div className="md:hidden absolute top-14 left-0 w-full bg-white border-b border-slate-100 shadow-xl py-4 flex flex-col px-6">
           <div className="flex flex-col gap-4 pb-6 border-b border-slate-100">
-            <Link href="/wie-es-funktioniert" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">Wie funktioniert's</Link>
+            <Link href="/wie-es-funktioniert" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">Wie funktioniert&apos;s</Link>
             <Link href="/medaillons" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">Medaillons</Link>
             <Link href="/ueber-uns" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">Über uns</Link>
           </div>
