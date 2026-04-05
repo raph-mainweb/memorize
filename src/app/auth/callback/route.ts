@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { cookies } from 'next/headers'
 
 export async function GET(request: Request) {
@@ -33,8 +34,21 @@ export async function GET(request: Request) {
     )
     
     // Trade the OAuth code securely for the session token cookie
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error && user) {
+      // Check if user is an admin
+      const adminClient = createAdminClient()
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+        
+      if (profile?.is_admin) {
+        return NextResponse.redirect(`${origin}/admin`)
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
