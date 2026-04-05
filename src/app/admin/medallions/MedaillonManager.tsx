@@ -56,10 +56,16 @@ export default function MedaillonManager({ products, initialCodes }: Omit<Props,
 
   // --- Generator state ---
   const [genProduct, setGenProduct] = useState('');
-  const [genBatch, setGenBatch] = useState('');
+  const [genBatch, setGenBatch] = useState(() => {
+    // Auto-suggest a batch name on first render
+    const year = new Date().getFullYear();
+    const seq = String(Math.floor(Math.random() * 900) + 100);
+    return `MEDALLION-${year}-${seq}`;
+  });
   const [genCount, setGenCount] = useState(10);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedBatch, setGeneratedBatch] = useState<{ codes: MedaillonCode[]; batch: string } | null>(null);
+  const [genError, setGenError] = useState<string | null>(null);
 
   // --- Wareneingang state ---
   const [wiProduct, setWiProduct] = useState('');
@@ -91,9 +97,19 @@ export default function MedaillonManager({ products, initialCodes }: Omit<Props,
 
   // --- Generator submit ---
   async function handleGenerate() {
-    if (!genBatch.trim() || genCount < 1) return;
+    if (genCount < 1 || genCount > 500) return;
     setIsGenerating(true);
     setGeneratedBatch(null);
+    setGenError(null);
+
+    // Auto-fill batch name if still empty
+    const batchName = genBatch.trim() || (() => {
+      const year = new Date().getFullYear();
+      const seq = String(Math.floor(Math.random() * 900) + 100);
+      return `MEDALLION-${year}-${seq}`;
+    })();
+    if (!genBatch.trim()) setGenBatch(batchName);
+
     try {
       const res = await fetch('/api/admin/qr/generate', {
         method: 'POST',
@@ -101,16 +117,23 @@ export default function MedaillonManager({ products, initialCodes }: Omit<Props,
         body: JSON.stringify({
           product_id: genProduct || undefined,
           count: genCount,
-          batch_name: genBatch.trim(),
+          batch_name: batchName,
         }),
       });
       const data = await res.json();
-      if (data.codes) {
+      if (!res.ok) {
+        setGenError(data.error || `Fehler ${res.status}: Generierung fehlgeschlagen`);
+        return;
+      }
+      if (data.codes && data.codes.length > 0) {
         setGeneratedBatch({ codes: data.codes, batch: data.batch });
         setCodes(prev => [...data.codes, ...prev]);
+      } else {
+        setGenError('Keine Codes zurückgegeben — möglicherweise SQL-Migration noch nicht ausgeführt.');
       }
     } catch (e) {
-      console.error(e);
+      console.error('[Generate error]', e);
+      setGenError(`Netzwerkfehler: ${e instanceof Error ? e.message : 'Unbekannte Ursache'}`);
     } finally {
       setIsGenerating(false);
     }
@@ -253,9 +276,15 @@ export default function MedaillonManager({ products, initialCodes }: Omit<Props,
                 <p className="text-xs text-slate-400 mt-1">Max. 500 pro Generierung</p>
               </div>
 
+              {genError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+                  <strong className="font-semibold">Fehler:</strong> {genError}
+                </div>
+              )}
+
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating || !genBatch.trim()}
+                disabled={isGenerating}
                 className="w-full bg-slate-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-slate-800 transition flex items-center justify-center gap-2 disabled:opacity-40"
               >
                 {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
