@@ -26,7 +26,6 @@ export default async function MedaillonsPage() {
       .from('medallion_codes')
       .select('product_id')
       .in('product_id', productIds)
-      .eq('production_status', 'produced')
       .eq('inventory_status', 'in_stock');
 
     // Count per product_id

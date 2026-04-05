@@ -30,12 +30,11 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) notFound();
 
-  // Stock = codes that are produced AND in_stock for this product
+  // Stock = codes that are in_stock for this product (regardless of production_status)
   const { count: stock } = await supabase
     .from('medallion_codes')
     .select('*', { count: 'exact', head: true })
     .eq('product_id', product.id)
-    .eq('production_status', 'produced')
     .eq('inventory_status', 'in_stock');
 
   const availableStock = stock ?? 0;
