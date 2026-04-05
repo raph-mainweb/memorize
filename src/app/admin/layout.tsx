@@ -1,56 +1,62 @@
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, LogOut } from 'lucide-react';
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Middleware strictly handles protection natively on the edge; this is fallback logic.
-  if (!user) redirect('/auth/login');
-
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 selection:bg-sage-200">
-      
+    <div className="min-h-screen bg-stone-50 flex">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-slate-900 text-slate-300 md:min-h-screen flex flex-col z-20 shadow-xl shadow-slate-900/10">
-        <div className="p-6">
-          <Link href="/admin" className="font-serif text-2xl font-bold tracking-tight text-white block">
-            Nachklang <span className="text-sage-400 font-normal italic">Admin</span>
-          </Link>
-          <div className="mt-2 text-[9px] font-bold uppercase tracking-widest text-slate-500 border border-slate-700 bg-slate-800 rounded px-2 py-0.5 inline-block">Service Role Enabled</div>
-        </div>
+      <aside className="w-64 bg-white border-r border-slate-200 hidden md:block">
+        <div className="p-6 h-full flex flex-col">
+          <div className="mb-10">
+            <h2 className="text-xl font-serif text-slate-800">Nachklang.</h2>
+            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">Admin Panel</p>
+          </div>
+          
+          <nav className="flex-1 space-y-2">
+            <Link 
+              href="/admin" 
+              className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
+            >
+              Control Center
+            </Link>
+            <Link 
+              href="/admin/orders" 
+              className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
+            >
+              Bestellungen
+            </Link>
+            <Link 
+              href="/admin/medallions" 
+              className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
+            >
+              Medaillons (QR-Codes)
+            </Link>
+            <Link 
+              href="/admin/products" 
+              className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
+            >
+              Produkte (Designs)
+            </Link>
+            <Link 
+              href="/admin/settings" 
+              className="block px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition font-medium text-sm"
+            >
+              Einstellungen
+            </Link>
+          </nav>
 
-        <nav className="flex-grow px-4 space-y-2 mt-4 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 scrollbar-hide">
-          <Link href="/admin" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-800 text-white font-medium text-sm transition shrink-0 shadow-sm">
-            <LayoutDashboard className="w-4 h-4" /> Übersicht
-          </Link>
-          <Link href="/admin/stock" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800/50 hover:text-white font-medium text-sm transition shrink-0">
-            <Package className="w-4 h-4" /> QR-Bestand
-          </Link>
-          <Link href="/admin/orders" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800/50 hover:text-white font-medium text-sm transition shrink-0">
-            <ShoppingCart className="w-4 h-4" /> Bestellwesen
-          </Link>
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800/50 hover:text-white font-medium text-sm transition shrink-0 mt-8 border-t border-slate-800/40">
-            Kundenansicht
-          </Link>
-        </nav>
-
-        <div className="p-4 mt-auto">
-          <form action={async () => { "use server"; const { signout } = await import('@/app/auth/actions'); await signout(); }}>
-            <button className="flex w-full items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 font-medium text-sm transition">
-              <LogOut className="w-4 h-4" /> System ausloggen
-            </button>
-          </form>
+          <div className="mt-auto border-t border-slate-100 pt-6">
+            <Link href="/dashboard" className="text-sm text-slate-400 hover:text-slate-600 transition flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              Zurück zur App
+            </Link>
+          </div>
         </div>
       </aside>
 
-      {/* Dynamic Render Frame */}
-      <main className="flex-1 overflow-y-auto w-full">
+      {/* Main Content */}
+      <main className="flex-1">
         {children}
       </main>
-
     </div>
   );
 }

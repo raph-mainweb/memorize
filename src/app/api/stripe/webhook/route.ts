@@ -57,8 +57,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   const lineItems = expandedSession.line_items?.data || [];
   
-  const isMedallionPurchase = lineItems.some(item => item.price?.id === process.env.STRIPE_PRICE_MEDALLION);
-  const isUnlockPurchase = lineItems.some(item => item.price?.id === process.env.STRIPE_PRICE_UNLOCK);
+  // Backward compatibility & dynamic price checkout logic
+  const isMedallionPurchase = lineItems.some(item => item.price?.id === process.env.STRIPE_PRICE_MEDALLION) || session.metadata?.medallion === 'true';
+  const isUnlockPurchase = session.metadata?.unlock === 'true' || lineItems.some(item => item.price?.id === process.env.STRIPE_PRICE_UNLOCK);
 
   const supabaseAdmin = createAdminClient();
   const memorialId = session.metadata?.memorial_id;
@@ -69,62 +70,32 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   // -----------------------------------------------------------------
-  // 1. One-Time Medallion Fulfillment Engine
+  // 1. One-Time Medallion Fulfillment Engine (New Manual Flow)
   // -----------------------------------------------------------------
-  if (isMedallionPurchase && memorialId) {
+  if (isMedallionPurchase) {
+    // Only log the order to `medallion_orders`. No automatic stock deduction.
+    // Admin handles manual dispatching via Dashboard.
     
-    // a. Fetch Oldest Available "Stocked" Token
-    const { data: codeData, error: codeErr } = await supabaseAdmin
-      .from('medallion_codes')
-      .select('id, code')
-      .eq('status', 'available')
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .single();
-
-    if (codeErr || !codeData) {
-      await sendStockAlertEmail(0);
-      throw new Error("CRITICAL: Out of Medallion Stock. Payment collected, assignment failed.");
-    }
-
-    // b. Alert Admin if Stock touches warning bounds
-    const { count: stockCount } = await supabaseAdmin
-      .from('medallion_codes')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'available');
-
-    const threshold = parseInt(process.env.MEDALLION_STOCK_ALERT || '10', 10);
-    if (stockCount && (stockCount - 1) <= threshold) {
-      await sendStockAlertEmail(stockCount - 1);
-    }
-
-    // c. Log internal order ledger mapping shipping logic
-    const { data: orderData, error: orderErr } = await supabaseAdmin
+    // We assume there's a fallback product ID for legacy, or we rely on session metadata.
+    const productId = session.metadata?.product_id || null;
+    
+    const { error: orderErr } = await supabaseAdmin
       .from('medallion_orders')
       .insert({
         user_id: userId,
         // @ts-expect-error - Stripe Checkout Session shipping_details typing shifts with apiVersions
         shipping_address: JSON.stringify(session.shipping_details || session.customer_details?.address) || 'Unknown',
-        stripe_session_id: session.id,
-      })
-      .select('id')
-      .single();
+        stripe_session_id: session.id, // Store session ID for reference if not mapped natively
+        ...(productId ? { product_id: productId } : {}), // only set if we have the new products column mapping
+        ...(memorialId ? { memorial_id: memorialId } : {}), // save the targeted memorial
+        status: 'pending'
+      });
 
-    if (orderErr) throw new Error(`Failed generating log entry: ${orderErr.message}`);
-
-    // d. Finalize Medallion Code Transition globally
-    const { error: assignErr } = await supabaseAdmin
-      .from('medallion_codes')
-      .update({
-        status: 'assigned',
-        memorial_id: memorialId,
-        order_id: orderData.id,
-        assigned_at: new Date().toISOString()
-      })
-      .eq('id', codeData.id);
-
-    if (assignErr) throw new Error(`Code transition fail: ${assignErr.message}`);
-    console.log(`[Webhook Auto-Fulfillment] Assigned Code: ${codeData.code}`);
+    if (orderErr) {
+       console.error(`Failed generating log entry for Medallion Order: ${orderErr.message}`);
+    } else {
+       console.log(`[Webhook Auto-Fulfillment] New Medallion Order Logged for manual dispatch. User: ${userId}`);
+    }
   }
 
   // -----------------------------------------------------------------

@@ -23,11 +23,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Memorial ID fehlt' }, { status: 400 });
     }
 
-    const priceId = process.env.STRIPE_PRICE_UNLOCK;
-    if (!priceId) {
-      console.error('Missing STRIPE_PRICE_UNLOCK in environment variables');
-      return NextResponse.json({ error: 'Stripe Konfiguration fehlerhaft' }, { status: 500 });
+    // Fetch dynamic unlock price from DB
+    const { data: setting, error: settingsError } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'unlock_price')
+      .single();
+
+    if (settingsError && settingsError.code !== 'PGRST116') {
+      console.error('Error fetching unlock_price:', settingsError);
     }
+    
+    // Default fallback if DB is empty: 49 CHF
+    const unlockPrice = setting?.value || { amount: 4900, currency: 'chf', name: 'Gedenkseite Freischaltung' };
 
     // Determine the host for redirect URLs
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://nachklang.ch';
@@ -37,7 +45,13 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card', 'twint'], // 'twint' requires activation in Stripe dashboard for CH
       line_items: [
         {
-          price: priceId,
+          price_data: {
+            currency: unlockPrice.currency,
+            product_data: {
+              name: unlockPrice.name,
+            },
+            unit_amount: unlockPrice.amount,
+          },
           quantity: 1,
         },
       ],
@@ -47,6 +61,7 @@ export async function POST(req: NextRequest) {
       client_reference_id: user.id, // Picked up by webhook
       metadata: {
         memorial_id: memorial_id, // Picked up by webhook to unlock page
+        unlock: 'true',
       },
     });
 
