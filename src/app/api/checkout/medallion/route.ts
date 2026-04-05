@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Produkt nicht gefunden oder inaktiv.' }, { status: 404 });
     }
 
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://nachklang.ch';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'twint'],

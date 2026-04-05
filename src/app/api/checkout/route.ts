@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const unlockPrice = setting?.value || { amount: 4900, currency: 'chf', name: 'Gedenkseite Freischaltung' };
 
     // Determine the host for redirect URLs
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://nachklang.ch';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
 
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create({

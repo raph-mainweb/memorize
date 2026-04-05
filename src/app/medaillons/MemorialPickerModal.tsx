@@ -157,7 +157,7 @@ export default function MemorialPickerModal({ productId, productTitle, onClose }
                   >
                     <div className="flex-grow min-w-0">
                       <p className="font-medium text-slate-900 truncate">{m.name || 'Unbenannte Seite'}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">nachklang.ch/gedenken/{m.slug}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{typeof window !== 'undefined' ? window.location.host : 'memorize-liart.vercel.app'}/gedenken/{m.slug}</p>
                     </div>
                     <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full flex-shrink-0 ${
                       m.is_live ? 'bg-sage-100 text-sage-800' : 'bg-stone-100 text-stone-600'

@@ -180,7 +180,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Persönliche URL (Link)</label>
                 <div className="flex bg-white rounded-xl border border-slate-200 overflow-hidden focus-within:border-sage-500 focus-within:ring-1 focus-within:ring-sage-500 transition">
-                    <span className="bg-stone-50 px-3 py-3 text-slate-400 text-xs border-r border-slate-100 flex items-center">nachklang.ch/gedenken/</span>
+                    <span className="bg-stone-50 px-3 py-3 text-slate-400 text-xs border-r border-slate-100 flex items-center">{(process.env.NEXT_PUBLIC_APP_URL || '').replace(/^https?:\/\//, '') || 'memorize-liart.vercel.app'}/gedenken/</span>
                     <input 
                       type="text" name="slug" value={memorial.slug || ''} onChange={handleChange}
                       className="w-full text-slate-900 text-sm py-3 px-3 outline-none" 
@@ -351,7 +351,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
                  <div className="w-3 h-3 rounded-full bg-green-400/20"></div>
               </div>
               <div className="bg-stone-700/50 rounded-full px-4 py-1 text-xs text-stone-400 font-medium tracking-wide flex items-center gap-2">
-                 <span>nachklang.ch/gedenken/{memorial.slug}</span>
+                 <span>{(process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app').replace(/^https?:\/\//, '')}/gedenken/{memorial.slug}</span>
               </div>
               {!memorial.is_live && (
                 <button 

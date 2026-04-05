@@ -1,8 +1,11 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, QrCode, ArrowRight, Heart, Lock, Globe, Zap } from 'lucide-react';
+import { Plus, QrCode, ArrowRight, Heart, Lock, Globe, Zap, Eye } from 'lucide-react';
 import UnlockButton from './UnlockButton';
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
+const DISPLAY_HOST = SITE_URL.replace(/^https?:\/\//, '');
 
 export default async function DashboardOverview() {
   const supabase = createClient();
@@ -54,22 +57,22 @@ export default async function DashboardOverview() {
 
                 <h3 className="font-serif text-2xl text-slate-900 mb-1 truncate">{memorial.name}</h3>
                 
-                {/* URL — only clickable if live */}
+                {/* URL display */}
                 {memorial.is_live ? (
                   <Link
                     href={`/gedenken/${memorial.slug}`}
                     target="_blank"
                     className="text-sm font-light text-slate-400 hover:text-sage-600 truncate mb-4 transition block"
                   >
-                    nachklang.ch/gedenken/{memorial.slug}
+                    {DISPLAY_HOST}/gedenken/{memorial.slug}
                   </Link>
                 ) : (
                   <div className="flex items-center gap-1.5 mb-4">
                     <Lock className="w-3 h-3 text-amber-500 flex-shrink-0" />
                     <span className="text-sm font-light text-slate-300 truncate line-through">
-                      nachklang.ch/gedenken/{memorial.slug}
+                      {DISPLAY_HOST}/gedenken/{memorial.slug}
                     </span>
-                    <span className="text-[10px] text-amber-600 font-medium">nicht öffentlich</span>
+                    <span className="text-[10px] text-amber-600 font-medium ml-1">nicht öffentlich</span>
                   </div>
                 )}
 
@@ -88,7 +91,16 @@ export default async function DashboardOverview() {
                 )}
 
                 {/* Actions */}
-                <div className="mt-auto border-t border-stone-100 pt-4 flex gap-3">
+                <div className="mt-auto border-t border-stone-100 pt-4 flex gap-2">
+                  {/* Preview button — always visible to owner, private for drafts */}
+                  <Link
+                    href={`/gedenken/${memorial.slug}`}
+                    target="_blank"
+                    className="flex items-center justify-center gap-1 px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-slate-500 text-sm hover:bg-stone-50 hover:text-slate-800 transition shadow-sm"
+                    title="Seite als Vorschau ansehen"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </Link>
                   <Link href={`/dashboard/edit/${memorial.id}`} className="flex-1 text-center py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-slate-600 text-sm font-medium hover:bg-white transition shadow-sm">
                     {memorial.is_live ? 'Verwalten' : 'Bearbeiten'}
                   </Link>
@@ -99,6 +111,7 @@ export default async function DashboardOverview() {
                     Medaillon <ArrowRight className="w-3.5 h-3.5 opacity-70" />
                   </Link>
                 </div>
+
               </div>
             ))}
           </div>
