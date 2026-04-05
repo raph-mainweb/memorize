@@ -1,0 +1,199 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+import { X, Loader2, Plus, ChevronRight, FileHeart, LogIn } from 'lucide-react';
+
+interface Props {
+  productId: string;
+  productTitle: string;
+  onClose: () => void;
+}
+
+interface Memorial {
+  id: string;
+  name: string;
+  slug: string;
+  is_live: boolean;
+  type: string;
+}
+
+type Step = 'loading' | 'unauthenticated' | 'no-pages' | 'pick' | 'checkout';
+
+export default function MemorialPickerModal({ productId, productTitle, onClose }: Props) {
+  const [step, setStep] = useState<Step>('loading');
+  const [memorials, setMemorials] = useState<Memorial[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setStep('unauthenticated');
+        return;
+      }
+
+      const { data: pages } = await supabase
+        .from('memorial_pages')
+        .select('id, name, slug, is_live, type')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (!pages || pages.length === 0) {
+        setStep('no-pages');
+      } else {
+        setMemorials(pages);
+        setStep('pick');
+      }
+    }
+    init();
+  }, []);
+
+  async function handleCheckout() {
+    if (!selected) return;
+    setIsCheckingOut(true);
+
+    const res = await fetch('/api/checkout/medallion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, memorial_id: selected }),
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      console.error('Checkout error:', data.error);
+      setIsCheckingOut(false);
+    }
+  }
+
+  return (
+    // Backdrop
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-stone-100">
+          <div>
+            <h2 className="font-serif text-xl text-slate-900">Medaillon verbinden</h2>
+            <p className="text-xs text-slate-500 mt-0.5">{productTitle}</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-stone-100 transition">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+
+          {/* Loading */}
+          {step === 'loading' && (
+            <div className="py-12 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+            </div>
+          )}
+
+          {/* Not logged in */}
+          {step === 'unauthenticated' && (
+            <div className="py-8 text-center">
+              <LogIn className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+              <h3 className="font-medium text-slate-800 mb-1">Anmeldung erforderlich</h3>
+              <p className="text-sm text-slate-500 mb-6">
+                Bitte melde dich an, um ein Medaillon zu bestellen. Du brauchst eine Gedenkseite, mit der das Medaillon verbunden wird.
+              </p>
+              <button
+                onClick={() => router.push(`/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
+                className="w-full bg-slate-900 text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition"
+              >
+                Anmelden / Registrieren
+              </button>
+            </div>
+          )}
+
+          {/* No pages yet */}
+          {step === 'no-pages' && (
+            <div className="py-8 text-center">
+              <FileHeart className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+              <h3 className="font-medium text-slate-800 mb-1">Noch keine Gedenkseite</h3>
+              <p className="text-sm text-slate-500 mb-6">
+                Das Medaillon braucht eine Gedenkseite — der QR-Code auf dem Medaillon führt direkt dorthin. Erstelle zuerst eine Seite (kostenlos, kein Kreditkarte nötig).
+              </p>
+              <button
+                onClick={() => router.push('/dashboard/neu')}
+                className="w-full bg-slate-900 text-white py-3 rounded-xl font-medium text-sm hover:bg-slate-800 transition flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Gedenkseite erstellen
+              </button>
+            </div>
+          )}
+
+          {/* Pick a memorial */}
+          {step === 'pick' && (
+            <div>
+              <p className="text-sm text-slate-600 mb-4">
+                Wähle die Gedenkseite, mit der das Medaillon verbunden werden soll. Der QR-Code auf dem Medaillon führt direkt zu dieser Seite.
+              </p>
+
+              <div className="space-y-2 mb-4 max-h-64 overflow-y-auto pr-1">
+                {memorials.map(m => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSelected(m.id)}
+                    className={`w-full text-left px-4 py-3.5 rounded-xl border-2 transition flex items-center gap-3 ${
+                      selected === m.id
+                        ? 'border-slate-900 bg-stone-50'
+                        : 'border-stone-200 hover:border-slate-400'
+                    }`}
+                  >
+                    <div className="flex-grow min-w-0">
+                      <p className="font-medium text-slate-900 truncate">{m.name || 'Unbenannte Seite'}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">nachklang.ch/gedenken/{m.slug}</p>
+                    </div>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full flex-shrink-0 ${
+                      m.is_live ? 'bg-sage-100 text-sage-800' : 'bg-stone-100 text-stone-600'
+                    }`}>
+                      {m.is_live ? 'Live' : 'Entwurf'}
+                    </span>
+                    {selected === m.id && <ChevronRight className="w-4 h-4 text-slate-900 flex-shrink-0" />}
+                  </button>
+                ))}
+              </div>
+
+              {/* Option to create a new page */}
+              <button
+                type="button"
+                onClick={() => router.push('/dashboard/neu')}
+                className="w-full text-sm text-slate-500 py-3 border border-dashed border-stone-200 rounded-xl hover:border-slate-400 hover:text-slate-700 flex items-center justify-center gap-2 transition mb-5"
+              >
+                <Plus className="w-4 h-4" /> Neue Gedenkseite erstellen
+              </button>
+
+              <button
+                onClick={handleCheckout}
+                disabled={!selected || isCheckingOut}
+                className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-semibold text-sm hover:bg-slate-800 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isCheckingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {isCheckingOut ? 'Weiterleitung zu Stripe...' : `Weiter zur Kasse`}
+              </button>
+              {!selected && (
+                <p className="text-xs text-center text-slate-400 mt-2">Bitte erst eine Gedenkseite auswählen</p>
+              )}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
