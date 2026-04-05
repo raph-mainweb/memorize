@@ -89,7 +89,7 @@ export default async function MedallionsPage() {
                    {codes?.map(c => (
                      <tr key={c.id} className="hover:bg-slate-50">
                        <td className="px-6 py-3 font-mono text-xs">{c.code}</td>
-                       <td className="px-6 py-3 text-slate-600">{(c as any).products?.title || 'Generisch'}</td>
+                       <td className="px-6 py-3 text-slate-600">{(c as { products?: { title: string } | null }).products?.title || 'Generisch'}</td>
                        <td className="px-6 py-3">
                          {c.status === 'available' ? (
                             <span className="px-2 py-1 bg-sage-50 text-sage-700 rounded-md text-xs font-bold">Lager</span>

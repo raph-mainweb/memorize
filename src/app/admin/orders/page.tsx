@@ -10,12 +10,12 @@ export default async function OrdersPage() {
     .eq('status', 'pending')
     .order('created_at', { ascending: true });
 
-  const { data: completedOrders } = await supabase
-    .from('medallion_orders')
-    .select('*, profiles(email)')
-    .neq('status', 'pending')
-    .order('created_at', { ascending: false })
-    .limit(50);
+  // const { data: completedOrders } = await supabase
+  //   .from('medallion_orders')
+  //   .select('*, profiles(email)')
+  //   .neq('status', 'pending')
+  //   .order('created_at', { ascending: false })
+  //   .limit(50);
 
   async function fulfillOrder(formData: FormData) {
     'use server'
@@ -69,9 +69,9 @@ export default async function OrdersPage() {
            {pendingOrders?.map(order => (
              <div key={order.id} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 lg:flex items-center justify-between">
                 <div className="mb-4 lg:mb-0">
-                   <p className="text-sm font-bold text-slate-800">Bestellung: {order.id.split('-')[0]} &mdash; {(order as any).products?.title || 'Generisches Medaillon'}</p>
-                   <p className="text-sm text-slate-500 mt-1">Kunde: {(order as any).profiles?.email || order.user_id}</p>
-                   <p className="text-sm text-slate-500 mt-1">Für Gedenkseite: {(order as any).memorial_pages?.name || 'Keine Seite verknüpft'}</p>
+                   <p className="text-sm font-bold text-slate-800">Bestellung: {order.id.split('-')[0]} &mdash; {(order as { products?: { title?: string } }).products?.title || 'Generisches Medaillon'}</p>
+                   <p className="text-sm text-slate-500 mt-1">Kunde: {(order as { profiles?: { email?: string } }).profiles?.email || order.user_id}</p>
+                   <p className="text-sm text-slate-500 mt-1">Für Gedenkseite: {(order as { memorial_pages?: { name?: string } }).memorial_pages?.name || 'Keine Seite verknüpft'}</p>
                    <div className="mt-4 p-4 bg-stone-50 rounded-xl text-sm whitespace-pre-wrap font-mono text-slate-700">
                       {order.shipping_address?.replace(/\\n/g, '\n').replace(/"/g, '')}
                    </div>

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
-import { sendStockAlertEmail } from '@/utils/resend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

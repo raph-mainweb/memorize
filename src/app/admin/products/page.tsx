@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/utils/supabase/admin';
-import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 
 export default async function ProductsPage() {
