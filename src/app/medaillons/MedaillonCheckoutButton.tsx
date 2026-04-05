@@ -1,16 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, AlertCircle } from 'lucide-react';
 import MemorialPickerModal from './MemorialPickerModal';
 
 interface Props {
   productId: string;
   productTitle: string;
+  stock: number; // Available units (production_status=produced, inventory_status=in_stock)
 }
 
-export default function MedaillonCheckoutButton({ productId, productTitle }: Props) {
+export default function MedaillonCheckoutButton({ productId, productTitle, stock }: Props) {
   const [open, setOpen] = useState(false);
+  const inStock = stock > 0;
+
+  if (!inStock) {
+    return (
+      <div className="flex flex-col gap-2">
+        <button
+          disabled
+          className="flex-1 flex items-center justify-center gap-2 bg-stone-100 text-stone-400 py-3.5 rounded-xl text-sm font-semibold cursor-not-allowed border border-stone-200"
+        >
+          <AlertCircle className="w-4 h-4" />
+          Ausverkauft
+        </button>
+        <p className="text-xs text-slate-400 text-center">
+          Dieses Modell ist momentan nicht verfügbar. Bitte schaue bald wieder vorbei.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>

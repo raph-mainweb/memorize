@@ -10,12 +10,32 @@ export const metadata = {
 
 export default async function MedaillonsPage() {
   const supabase = createAdminClient();
-  
+
   const { data: products } = await supabase
     .from('products')
     .select('id, title, short_description, price_in_cents, gallery_images')
     .eq('is_active', true)
     .order('price_in_cents', { ascending: true });
+
+  // Load stock counts for all products in one query (group by product_id)
+  // We query codes that are produced + in_stock for each product
+  const stockMap: Record<string, number> = {};
+  if (products && products.length > 0) {
+    const productIds = products.map(p => p.id);
+    const { data: stockRows } = await supabase
+      .from('medallion_codes')
+      .select('product_id')
+      .in('product_id', productIds)
+      .eq('production_status', 'produced')
+      .eq('inventory_status', 'in_stock');
+
+    // Count per product_id
+    (stockRows || []).forEach((row: { product_id: string | null }) => {
+      if (row.product_id) {
+        stockMap[row.product_id] = (stockMap[row.product_id] || 0) + 1;
+      }
+    });
+  }
 
   return (
     <div className="flex-grow bg-stone-50">
@@ -37,6 +57,9 @@ export default async function MedaillonsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map(product => {
               const img = product.gallery_images?.[0];
+              const stock = stockMap[product.id] ?? 0;
+              const inStock = stock > 0;
+
               return (
                 <Link
                   key={product.id}
@@ -57,11 +80,24 @@ export default async function MedaillonsPage() {
                         <Package className="w-16 h-16 text-stone-300" />
                       </div>
                     )}
+
+                    {/* Stock badge overlay */}
+                    {!inStock && (
+                      <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                        <span className="bg-white/90 backdrop-blur-sm text-slate-600 text-sm font-semibold px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+                          Ausverkauft
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Product Info */}
                   <div className="p-5">
-                    <h3 className="font-serif text-xl text-slate-900 mb-1 group-hover:text-sage-700 transition">{product.title}</h3>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-serif text-xl text-slate-900 group-hover:text-sage-700 transition">{product.title}</h3>
+                      {/* Stock dot */}
+                      <span className={`mt-1.5 flex-shrink-0 w-2 h-2 rounded-full ${inStock ? 'bg-emerald-400' : 'bg-red-300'}`} title={inStock ? `${stock} verfügbar` : 'Ausverkauft'} />
+                    </div>
                     {product.short_description && (
                       <p className="text-slate-500 text-sm line-clamp-2 mb-3 font-light">{product.short_description}</p>
                     )}
@@ -69,8 +105,8 @@ export default async function MedaillonsPage() {
                       <span className="text-lg font-medium text-slate-900">
                         CHF {((product.price_in_cents || 0) / 100).toFixed(2)}
                       </span>
-                      <span className="text-sm text-sage-600 font-medium group-hover:underline">
-                        Details →
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${inStock ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-500'}`}>
+                        {inStock ? `${stock} verfügbar` : 'Ausverkauft'}
                       </span>
                     </div>
                   </div>

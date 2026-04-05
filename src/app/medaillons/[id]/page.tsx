@@ -30,6 +30,16 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) notFound();
 
+  // Stock = codes that are produced AND in_stock for this product
+  const { count: stock } = await supabase
+    .from('medallion_codes')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', product.id)
+    .eq('production_status', 'produced')
+    .eq('inventory_status', 'in_stock');
+
+  const availableStock = stock ?? 0;
+
   const images: string[] = product.gallery_images || [];
   const usps: string[] = product.usp || [];
 
@@ -66,9 +76,30 @@ export default async function ProductDetailPage({ params }: Props) {
               <span className="text-slate-400 text-sm">inkl. Versand & Gravur</span>
             </div>
 
+            {/* Stock indicator */}
+            <div className="flex items-center gap-2 mb-6">
+              {availableStock > 0 ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+                  <span className="text-sm text-emerald-700 font-medium">
+                    {availableStock} {availableStock === 1 ? 'Stück' : 'Stück'} verfügbar
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+                  <span className="text-sm text-red-600 font-medium">Ausverkauft</span>
+                </>
+              )}
+            </div>
+
             {/* CTA */}
             <div className="flex flex-col gap-3 mb-8">
-              <MedaillonCheckoutButton productId={product.id} productTitle={product.title} />
+              <MedaillonCheckoutButton
+                productId={product.id}
+                productTitle={product.title}
+                stock={availableStock}
+              />
               <Link
                 href="/dashboard/neu"
                 className="text-center py-3.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 transition"
