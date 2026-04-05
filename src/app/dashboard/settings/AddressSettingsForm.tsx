@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 
 interface Profile {
@@ -20,7 +19,7 @@ interface Props {
   userId: string;
 }
 
-export default function AddressSettingsForm({ profile, userId }: Props) {
+export default function AddressSettingsForm({ profile }: Props) {
   const [form, setForm] = useState({
     first_name: profile?.first_name || '',
     last_name: profile?.last_name || '',
@@ -34,7 +33,6 @@ export default function AddressSettingsForm({ profile, userId }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
-  const supabase = createClient();
 
   const inputCls = 'w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-slate-400 transition';
 
@@ -44,9 +42,20 @@ export default function AddressSettingsForm({ profile, userId }: Props) {
     setSaved(false);
     setError('');
 
-    const { error: err } = await supabase.from('profiles').update(form).eq('id', userId);
-    if (err) { setError(err.message); }
-    else { setSaved(true); setTimeout(() => setSaved(false), 3000); }
+    // Use API route with admin client — bypasses RLS reliably
+    const res = await fetch('/api/profile/address', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      setError(data.error || 'Fehler beim Speichern');
+    } else {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    }
     setSaving(false);
   }
 
@@ -103,7 +112,8 @@ export default function AddressSettingsForm({ profile, userId }: Props) {
       {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
 
       <div className="flex items-center gap-4 pt-2">
-        <button type="submit" disabled={saving} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-40">
+        <button type="submit" disabled={saving}
+          className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-40">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {saving ? 'Speichern…' : 'Adresse speichern'}
         </button>

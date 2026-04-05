@@ -95,20 +95,13 @@ export default function MemorialPickerModal({ productId, productTitle, onClose }
     setAddressError('');
     setIsSavingAddress(true);
 
-    // Save address to profile
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('profiles').update({
-        first_name: address.first_name,
-        last_name: address.last_name,
-        address_line1: address.address_line1,
-        address_line2: address.address_line2,
-        postal_code: address.postal_code,
-        city: address.city,
-        country: address.country,
-        phone: address.phone,
-      }).eq('id', user.id);
-    }
+    // Save address via API route (uses admin client → bypasses RLS)
+    const saveRes = await fetch('/api/profile/address', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(address),
+    });
+    if (!saveRes.ok) console.warn('[Modal] Address save failed:', await saveRes.text());
     setIsSavingAddress(false);
     await handleCheckout();
   }
@@ -124,15 +117,15 @@ export default function MemorialPickerModal({ productId, productTitle, onClose }
         product_id: productId,
         memorial_id: selected,
         shipping: {
-          name: `${address.first_name} ${address.last_name}`.trim(),
-          address: {
-            line1: address.address_line1,
-            line2: address.address_line2 || undefined,
-            postal_code: address.postal_code,
-            city: address.city,
-            country: address.country,
-          },
-          phone: address.phone || undefined,
+          // Flat format matching checkout route + fulfill page
+          first_name: address.first_name,
+          last_name: address.last_name,
+          address_line1: address.address_line1,
+          address_line2: address.address_line2 || '',
+          postal_code: address.postal_code,
+          city: address.city,
+          country: address.country,
+          phone: address.phone || '',
         },
       }),
     });
