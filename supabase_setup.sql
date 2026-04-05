@@ -23,11 +23,22 @@ CREATE TABLE IF NOT EXISTS products (
     title TEXT NOT NULL,
     description TEXT,
     short_description TEXT,
-    usp JSONB,
-    price_in_cents INT NOT NULL,
-    image_url TEXT,
+    usp JSONB DEFAULT '[]'::jsonb,
+    price_in_cents INT NOT NULL DEFAULT 0,
+    gallery_images JSONB DEFAULT '[]'::jsonb,
+    is_active BOOLEAN DEFAULT true,
+    stripe_price_id TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Allow adding missing columns to existing products table
+DO $$ BEGIN
+  BEGIN ALTER TABLE products ADD COLUMN IF NOT EXISTS short_description TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+  BEGIN ALTER TABLE products ADD COLUMN IF NOT EXISTS usp JSONB DEFAULT '[]'::jsonb; EXCEPTION WHEN duplicate_column THEN null; END;
+  BEGIN ALTER TABLE products ADD COLUMN IF NOT EXISTS gallery_images JSONB DEFAULT '[]'::jsonb; EXCEPTION WHEN duplicate_column THEN null; END;
+  BEGIN ALTER TABLE products ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true; EXCEPTION WHEN duplicate_column THEN null; END;
+  BEGIN ALTER TABLE products ADD COLUMN IF NOT EXISTS stripe_price_id TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+END $$;
 
 -- 4. Update bestehender Tabellen
 DO $$ 
