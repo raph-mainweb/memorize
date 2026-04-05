@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, LogOut, QrCode, ArrowRight, Heart } from 'lucide-react';
+import { Plus, QrCode, ArrowRight, Heart } from 'lucide-react';
 
 export default async function DashboardOverview() {
   const supabase = createClient();
