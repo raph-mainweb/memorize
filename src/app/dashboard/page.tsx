@@ -20,17 +20,7 @@ export default async function DashboardOverview() {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <nav className="bg-white border-b border-stone-100 px-6 h-16 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <Link href="/" className="font-serif text-xl font-bold tracking-tight text-slate-900">
-          Nachklang <span className="text-sage-500 font-normal italic">CH</span>
-        </Link>
-        <div className="flex gap-4 items-center">
-           <span className="text-xs font-medium text-slate-500 truncate max-w-[120px] sm:max-w-none bg-stone-100 px-3 py-1.5 rounded-full">{user.email}</span>
-           <form action={async () => { "use server"; const { signout } = await import('@/app/auth/actions'); await signout(); }}>
-             <button type="submit" className="text-slate-400 hover:text-red-500 transition" title="Abmelden"><LogOut className="w-5 h-5"/></button>
-           </form>
-        </div>
-      </nav>
+
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">

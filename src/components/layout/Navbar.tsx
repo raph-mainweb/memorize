@@ -112,6 +112,13 @@ export default function Navbar() {
                     >
                       Dashboard
                     </Link>
+                    <Link 
+                      href="/dashboard/settings" 
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      Kontoeinstellungen
+                    </Link>
                     <button 
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -160,6 +167,7 @@ export default function Navbar() {
                    <span className="text-sm text-slate-500">{user.email}</span>
                 </div>
                 <Link href="/dashboard" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">Dashboard</Link>
+                <Link href="/dashboard/settings" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">Kontoeinstellungen</Link>
                 <Link href="/dashboard/neu" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700">+ Neue Seite erstellen</Link>
                 <button onClick={handleLogout} className="text-base font-medium text-left text-red-600">Logout</button>
                </>
