@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -36,15 +37,20 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
 
-    // Explicit DB check for the is_admin boolean
-    const { data: profile } = await supabase
+    // Explicit DB check for the is_admin boolean using Admin Client bypassing RLS
+    const supabaseAdmin = createAdminClient();
+    const { data: profile, error: profileErr } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
       .eq('id', user.id)
       .single()
 
+    if (profileErr) {
+      console.error(`[Security] DB Error fetching profile for ${user.id}:`, profileErr);
+    }
+
     if (!profile || !profile.is_admin) {
-      console.warn(`[Security] Unauthorized admin access attempt by ${user.id}`);
+      console.warn(`[Security] Unauthorized admin access attempt by ${user.id} (${user.email})`);
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
