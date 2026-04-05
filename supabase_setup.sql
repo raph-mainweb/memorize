@@ -125,3 +125,20 @@ END $$;
 
 -- Also run schema reload after:
 -- NOTIFY pgrst, 'reload schema';
+
+-- 7. Extend medallion_orders table with missing columns
+-- Run in Supabase SQL Editor:
+DO $$
+BEGIN
+    BEGIN ALTER TABLE medallion_orders ADD COLUMN IF NOT EXISTS memorial_id UUID; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_orders ADD COLUMN IF NOT EXISTS product_id UUID; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_orders ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending'; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_orders ADD COLUMN IF NOT EXISTS stripe_session_id TEXT; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS assigned_user_id UUID; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS assigned_page_id UUID; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS assigned_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN null; END;
+    BEGIN ALTER TABLE medallion_codes ADD COLUMN IF NOT EXISTS connected_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN null; END;
+END $$;
+
+-- NOTIFY pgrst, 'reload schema';
+

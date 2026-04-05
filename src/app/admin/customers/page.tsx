@@ -35,6 +35,7 @@ export default async function AdminCustomersPage() {
   });
 
   const allUsers = authUsers || [];
+  // Show only non-admin users, admins are filtered out
   const customers = allUsers.filter(u => !profileMap[u.id]?.is_admin);
   const totalOrders = Object.values(orderCounts).reduce((a, b) => a + b, 0);
   const totalLive = Object.values(pageCounts).reduce((a, b) => a + b.live, 0);
@@ -78,7 +79,7 @@ export default async function AdminCustomersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {allUsers.map(user => {
+              {customers.map(user => {
                 const prof = profileMap[user.id] || {};
                 const pages = pageCounts[user.id] || { total: 0, live: 0 };
                 const orders = orderCounts[user.id] || 0;

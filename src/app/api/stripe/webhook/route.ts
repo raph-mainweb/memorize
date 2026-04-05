@@ -11,103 +11,167 @@ export async function POST(req: NextRequest) {
   const payload = await req.text();
   const signature = req.headers.get('Stripe-Signature');
 
-  if (!signature) {
-    return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
-  }
+  if (!signature) return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
 
   let event: Stripe.Event;
-
   try {
-    // Requires STRIPE_WEBHOOK_SECRET to be present in .env
-    event = stripe.webhooks.constructEvent(
-      payload,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET as string
-    );
+    event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET as string);
   } catch (err: unknown) {
     const error = err as Error;
-    console.error(`[Webhook Error] Verify failed:`, error.message);
+    console.error(`[Webhook] verify failed:`, error.message);
     return NextResponse.json({ error: `Webhook Error: ${error.message}` }, { status: 400 });
   }
 
   try {
-    // -------------------------------------------------------------
-    // Core Workflow: Stripe Session Completion Triage
-    // -------------------------------------------------------------
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       await handleCheckoutSessionCompleted(session);
     }
-
     return NextResponse.json({ received: true });
   } catch (err: unknown) {
     const error = err as Error;
-    console.error(`[Webhook Logic Error]:`, error);
+    console.error(`[Webhook] logic error:`, error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  // Expand line items to determine the specific products purchased
-  const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
-    expand: ['line_items']
-  });
-
-  const lineItems = expandedSession.line_items?.data || [];
-  
-  // Backward compatibility & dynamic price checkout logic
-  const isMedallionPurchase = lineItems.some(item => item.price?.id === process.env.STRIPE_PRICE_MEDALLION) || session.metadata?.medallion === 'true';
-  const isUnlockPurchase = session.metadata?.unlock === 'true' || lineItems.some(item => item.price?.id === process.env.STRIPE_PRICE_UNLOCK);
-
-  const supabaseAdmin = createAdminClient();
+  const supabase = createAdminClient();
+  const userId = session.client_reference_id;
   const memorialId = session.metadata?.memorial_id;
-  const userId = session.client_reference_id; 
+  const productId = session.metadata?.product_id;
+  const sessionType = session.metadata?.type;
 
-  if (!userId) {
-    throw new Error("Missing Auth UID (client_reference_id) from session payload");
-  }
+  console.log(`[Webhook] session ${session.id} | type=${sessionType} | user=${userId} | memorial=${memorialId} | product=${productId}`);
+
+  if (!userId) throw new Error('Missing client_reference_id');
 
   // -----------------------------------------------------------------
-  // 1. One-Time Medallion Fulfillment Engine (New Manual Flow)
+  // 1. MEDALLION PURCHASE — detect via metadata.type === 'medallion'
   // -----------------------------------------------------------------
+  const isMedallionPurchase = sessionType === 'medallion';
+
   if (isMedallionPurchase) {
-    // Only log the order to `medallion_orders`. No automatic stock deduction.
-    // Admin handles manual dispatching via Dashboard.
-    
-    // We assume there's a fallback product ID for legacy, or we rely on session metadata.
-    const productId = session.metadata?.product_id || null;
-    
-    const { error: orderErr } = await supabaseAdmin
-      .from('medallion_orders')
-      .insert({
+    console.log(`[Webhook] Medallion purchase → assigning code...`);
+
+    // 1a. Find an available medallion for this product
+    let codeId: string | null = null;
+    let codeCode: string | null = null;
+
+    if (productId) {
+      const { data: available } = await supabase
+        .from('medallion_codes')
+        .select('id, code')
+        .eq('product_id', productId)
+        .eq('inventory_status', 'in_stock')
+        .limit(1)
+        .single();
+
+      if (available) {
+        codeId = available.id;
+        codeCode = available.code;
+      }
+    }
+
+    // Fallback: any available code regardless of product
+    if (!codeId) {
+      const { data: anyCode } = await supabase
+        .from('medallion_codes')
+        .select('id, code')
+        .eq('inventory_status', 'in_stock')
+        .limit(1)
+        .single();
+      if (anyCode) { codeId = anyCode.id; codeCode = anyCode.code; }
+    }
+
+    if (codeId) {
+      // 1b. Assign the code
+      const now = new Date().toISOString();
+      const { error: assignError } = await supabase
+        .from('medallion_codes')
+        .update({
+          inventory_status: 'assigned',
+          status: 'assigned',
+          assigned_user_id: userId,
+          assigned_page_id: memorialId || null,
+          connected_at: now,
+          assigned_at: now,
+        })
+        .eq('id', codeId);
+
+      if (assignError) {
+        console.error(`[Webhook] Code assign error:`, assignError.message);
+      } else {
+        console.log(`[Webhook] Code ${codeCode} assigned to user ${userId}, memorial ${memorialId}`);
+      }
+
+      // 1c. Store order record
+      const shippingRaw = session.metadata?.shipping_json;
+      const shippingAddress = shippingRaw || JSON.stringify(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session as any).shipping_details || session.customer_details?.address
+      ) || 'Unbekannt';
+
+      await supabase.from('medallion_orders').insert({
         user_id: userId,
-        // @ts-expect-error - Stripe Checkout Session shipping_details typing shifts with apiVersions
-        shipping_address: JSON.stringify(session.shipping_details || session.customer_details?.address) || 'Unknown',
-        stripe_session_id: session.id, // Store session ID for reference if not mapped natively
-        ...(productId ? { product_id: productId } : {}), // only set if we have the new products column mapping
-        ...(memorialId ? { memorial_id: memorialId } : {}), // save the targeted memorial
-        status: 'pending'
+        medallion_code_id: codeId,
+        shipping_address: shippingAddress,
+        memorial_id: memorialId || null,
+        product_id: productId || null,
+        status: 'processing',
+        stripe_session_id: session.id,
       });
 
-    if (orderErr) {
-       console.error(`Failed generating log entry for Medallion Order: ${orderErr.message}`);
+      // 1d. Save shipping address back to profile (if provided via metadata)
+      if (shippingRaw) {
+        try {
+          const shipping = JSON.parse(shippingRaw) as {
+            first_name?: string; last_name?: string;
+            address_line1?: string; address_line2?: string;
+            postal_code?: string; city?: string; country?: string; phone?: string;
+          };
+          await supabase.from('profiles').update({
+            first_name: shipping.first_name || null,
+            last_name: shipping.last_name || null,
+            address_line1: shipping.address_line1 || null,
+            address_line2: shipping.address_line2 || null,
+            postal_code: shipping.postal_code || null,
+            city: shipping.city || null,
+            country: shipping.country || null,
+            phone: shipping.phone || null,
+          }).eq('id', userId);
+          console.log(`[Webhook] Shipping address saved to profile for user ${userId}`);
+        } catch (e) {
+          console.error(`[Webhook] Failed to parse shipping JSON:`, e);
+        }
+      }
     } else {
-       console.log(`[Webhook Auto-Fulfillment] New Medallion Order Logged for manual dispatch. User: ${userId}`);
+      console.error(`[Webhook] No available medallion code found for product ${productId} — order logged WITHOUT code assignment!`);
+      await supabase.from('medallion_orders').insert({
+        user_id: userId,
+        shipping_address: JSON.stringify(session.customer_details?.address) || 'Unbekannt',
+        memorial_id: memorialId || null,
+        product_id: productId || null,
+        status: 'pending_stock',
+        stripe_session_id: session.id,
+      });
     }
   }
 
   // -----------------------------------------------------------------
-  // 2. Virtual Memorial Unlock Activation Engine
+  // 2. UNLOCK PURCHASE
   // -----------------------------------------------------------------
+  const isUnlockPurchase = sessionType === 'unlock' || session.metadata?.unlock === 'true';
+
   if (isUnlockPurchase && memorialId) {
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
       .from('memorial_pages')
       .update({ is_live: true })
       .eq('id', memorialId)
       .eq('user_id', userId);
 
     if (error) throw new Error(`Unlock fail: ${error.message}`);
-    console.log(`[Webhook Activation] Live Unlocked: Memorial ${memorialId}`);
+    console.log(`[Webhook] Memorial ${memorialId} unlocked.`);
   }
 }
