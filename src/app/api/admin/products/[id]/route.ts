@@ -8,7 +8,7 @@ interface RouteParams {
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const body = await request.json();
-    const { title, short_description, description, price_in_cents, usp, is_active, stripe_price_id } = body;
+    const { title, short_description, description, price_in_cents, usp, gallery_images, is_active, stripe_price_id } = body;
 
     const db = createAdminClient();
     const { data, error } = await db.from('products').update({
@@ -17,6 +17,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       description: description || null,
       price_in_cents,
       usp: usp || [],
+      gallery_images: gallery_images || [],
       is_active: is_active ?? true,
       stripe_price_id: stripe_price_id || null,
     }).eq('id', params.id).select().single();

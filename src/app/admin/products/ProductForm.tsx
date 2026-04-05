@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, X, Tag, Trash2, ArrowLeft } from 'lucide-react';
+import GalleryUploader from './GalleryUploader';
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -13,6 +14,7 @@ interface ProductFormProps {
     description?: string;
     price_in_cents?: number;
     usp?: string[];
+    gallery_images?: string[];
     is_active?: boolean;
     stripe_price_id?: string;
   };
@@ -24,6 +26,7 @@ export default function ProductForm({ mode, initialData }: ProductFormProps) {
   const [error, setError] = useState('');
   const [usps, setUsps] = useState<string[]>(initialData?.usp || []);
   const [newUsp, setNewUsp] = useState('');
+  const [galleryImages, setGalleryImages] = useState<string[]>(initialData?.gallery_images || []);
 
   const addUsp = () => {
     if (newUsp.trim()) {
@@ -50,6 +53,7 @@ export default function ProductForm({ mode, initialData }: ProductFormProps) {
       description: formData.get('description') as string,
       price_in_cents: Math.round(Number(formData.get('price')) * 100),
       usp: usps,
+      gallery_images: galleryImages,
       is_active: formData.get('is_active') === 'on',
       stripe_price_id: formData.get('stripe_price_id') as string,
     };
@@ -163,6 +167,18 @@ export default function ProductForm({ mode, initialData }: ProductFormProps) {
             </button>
           </div>
           <p className="text-xs text-slate-400 mt-2">Enter-Taste oder Button zum Hinzufügen.</p>
+        </div>
+
+        {/* Gallery */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">
+            Galerie (Produktbilder)
+          </label>
+          <GalleryUploader
+            productId={initialData?.id}
+            initialImages={galleryImages}
+            onChange={setGalleryImages}
+          />
         </div>
       </div>
 

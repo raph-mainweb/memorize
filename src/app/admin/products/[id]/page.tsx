@@ -39,6 +39,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
           description: product.description,
           price_in_cents: product.price_in_cents,
           usp: product.usp || [],
+          gallery_images: product.gallery_images || [],
           is_active: product.is_active,
           stripe_price_id: product.stripe_price_id,
         }}

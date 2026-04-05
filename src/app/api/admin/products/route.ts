@@ -4,7 +4,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, short_description, description, price_in_cents, usp, is_active, stripe_price_id } = body;
+    const { title, short_description, description, price_in_cents, usp, gallery_images, is_active, stripe_price_id } = body;
 
     if (!title || price_in_cents === undefined) {
       return NextResponse.json({ error: 'Titel und Preis sind Pflichtfelder.' }, { status: 400 });
@@ -17,6 +17,7 @@ export async function POST(request: Request) {
       description: description || null,
       price_in_cents,
       usp: usp || [],
+      gallery_images: gallery_images || [],
       is_active: is_active ?? true,
       stripe_price_id: stripe_price_id || null,
     }).select().single();
