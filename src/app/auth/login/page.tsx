@@ -8,6 +8,8 @@ import { Mail, ArrowRight, ShieldCheck, RotateCcw, Loader2 } from 'lucide-react'
 
 // ─── OTP Input ───────────────────────────────────────────────────────────────
 
+const OTP_LENGTH = 8
+
 function OtpInput({
   value,
   onChange,
@@ -24,7 +26,7 @@ function OtpInput({
     const next = [...value]
     next[i] = digit
     onChange(next)
-    if (digit && i < 5) focus(i + 1)
+    if (digit && i < OTP_LENGTH - 1) focus(i + 1)
   }
 
   const handleKeyDown = (i: number, e: KeyboardEvent<HTMLInputElement>) => {
@@ -41,26 +43,26 @@ function OtpInput({
       }
     } else if (e.key === 'ArrowLeft' && i > 0) {
       focus(i - 1)
-    } else if (e.key === 'ArrowRight' && i < 5) {
+    } else if (e.key === 'ArrowRight' && i < OTP_LENGTH - 1) {
       focus(i + 1)
     }
   }
 
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH)
     if (!pasted) return
-    const next = Array(6).fill('')
+    const next = Array(OTP_LENGTH).fill('')
     pasted.split('').forEach((ch, idx) => { next[idx] = ch })
     onChange(next)
     // Focus last filled or next empty
-    const lastIdx = Math.min(pasted.length, 5)
+    const lastIdx = Math.min(pasted.length, OTP_LENGTH - 1)
     focus(lastIdx)
   }
 
   return (
-    <div className="flex gap-3 justify-center">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="flex gap-2 justify-center">
+      {Array.from({ length: OTP_LENGTH }).map((_, i) => (
         <input
           key={i}
           ref={(el) => { inputs.current[i] = el }}
@@ -75,13 +77,13 @@ function OtpInput({
           onPaste={handlePaste}
           onFocus={(e) => e.target.select()}
           className="
-            w-12 h-14 text-center text-2xl font-bold
-            bg-stone-50 border-2 rounded-2xl
+            w-10 h-13 text-center text-xl font-bold
+            bg-stone-50 border-2 rounded-xl
             text-slate-900 caret-transparent
             border-slate-200 focus:border-slate-900 focus:bg-white
             transition-all duration-150 outline-none
             shadow-sm focus:shadow-md
-            sm:w-14 sm:h-16
+            sm:w-12 sm:h-14
           "
           aria-label={`Code Ziffer ${i + 1}`}
         />
@@ -126,7 +128,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(''))
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''))
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resendCooldown, setResendCooldown] = useState(0)
@@ -173,7 +175,7 @@ export default function LoginPage() {
       setError('Fehler beim erneuten Senden.')
       return
     }
-    setOtp(Array(6).fill(''))
+    setOtp(Array(OTP_LENGTH).fill(''))
     startResendCooldown()
   }
 
@@ -182,8 +184,8 @@ export default function LoginPage() {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
     const token = otp.join('')
-    if (token.length < 6) {
-      setError('Bitte alle 6 Stellen eingeben.')
+    if (token.length < OTP_LENGTH) {
+      setError('Bitte alle 8 Stellen eingeben.')
       return
     }
     setError(null)
@@ -194,7 +196,7 @@ export default function LoginPage() {
     setPending(false)
     if (result.error) {
       setError('Ungültiger oder abgelaufener Code. Bitte versuche es noch einmal.')
-      setOtp(Array(6).fill(''))
+      setOtp(Array(OTP_LENGTH).fill(''))
       return
     }
 
@@ -287,7 +289,7 @@ export default function LoginPage() {
                 Code eingeben
               </h2>
               <p className="text-sm text-slate-500 leading-relaxed">
-                Wir haben einen 6-stelligen Code an{' '}
+                Wir haben einen Code an{' '}
                 <span className="font-semibold text-slate-700">{email}</span>{' '}
                 gesendet. Der Code ist 10 Minuten gültig.
               </p>
@@ -304,7 +306,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={pending || otp.join('').length < 6}
+                disabled={pending || otp.join('').length < OTP_LENGTH}
                 className="w-full flex justify-center items-center gap-2 py-4 px-4 rounded-2xl shadow-md text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {pending ? (
@@ -333,7 +335,7 @@ export default function LoginPage() {
               </button>
 
               <button
-                onClick={() => { setStep('email'); setOtp(Array(6).fill('')); setError(null) }}
+                onClick={() => { setStep('email'); setOtp(Array(OTP_LENGTH).fill('')); setError(null) }}
                 className="text-xs text-slate-400 hover:text-slate-600 transition"
               >
                 Andere E-Mail verwenden
