@@ -40,10 +40,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   const supabase = createAdminClient();
   const userId = session.client_reference_id;
   const memorialId = session.metadata?.memorial_id;
-  const productId = session.metadata?.product_id;
+  // New: Shopify product reference (replaces old Supabase product_id)
+  const shopifyProductId = session.metadata?.shopify_product_id;
+  const shopifyHandle = session.metadata?.shopify_handle;
   const sessionType = session.metadata?.type;
 
-  console.log(`[Webhook] session ${session.id} | type=${sessionType} | user=${userId} | memorial=${memorialId} | product=${productId}`);
+  console.log(`[Webhook] session ${session.id} | type=${sessionType} | user=${userId} | memorial=${memorialId} | shopify_product=${shopifyProductId}`);
 
   if (!userId) throw new Error('Missing client_reference_id');
 
@@ -59,11 +61,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     let codeId: string | null = null;
     let codeCode: string | null = null;
 
-    if (productId) {
+    if (shopifyProductId) {
       const { data: available } = await supabase
         .from('medallion_codes')
         .select('id, code')
-        .eq('product_id', productId)
+        .eq('shopify_product_id', shopifyProductId)
         .eq('inventory_status', 'in_stock')
         .limit(1)
         .single();
@@ -118,7 +120,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         medallion_code_id: codeId,
         shipping_address: shippingAddress,
         memorial_id: memorialId || null,
-        product_id: productId || null,
+        shopify_product_id: shopifyProductId || null,
+        shopify_handle: shopifyHandle || null,
         status: 'processing',
         stripe_session_id: session.id,
       });
@@ -147,12 +150,13 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         }
       }
     } else {
-      console.error(`[Webhook] No available medallion code found for product ${productId} — order logged WITHOUT code assignment!`);
+      console.error(`[Webhook] No available medallion code found for shopify_product ${shopifyProductId} — order logged WITHOUT code assignment!`);
       await supabase.from('medallion_orders').insert({
         user_id: userId,
         shipping_address: JSON.stringify(session.customer_details?.address) || 'Unbekannt',
         memorial_id: memorialId || null,
-        product_id: productId || null,
+        shopify_product_id: shopifyProductId || null,
+        shopify_handle: shopifyHandle || null,
         status: 'pending_stock',
         stripe_session_id: session.id,
       });

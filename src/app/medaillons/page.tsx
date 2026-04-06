@@ -1,37 +1,48 @@
+/**
+ * Public Medaillons Product List
+ *
+ * Product data source: Shopify Admin GraphQL API (via getAppProducts)
+ * Stock data source:   Supabase medallion_codes (inventory_status=in_stock)
+ *
+ * REPLACED: was loading from Supabase `products` table
+ * KEPT:     stock count display from Supabase (medallion_codes)
+ */
+
+import { getAppProducts } from '@/lib/shopify/products';
 import { createAdminClient } from '@/utils/supabase/admin';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Package } from 'lucide-react';
+import type { AppProduct } from '@/lib/shopify/types';
 
 export const metadata = {
   title: 'Medaillons | Nachklang CH',
   description: 'Entdecken Sie unsere exklusiven QR-Medaillons für würdevolle Gedenkstätten.',
 };
 
+// Revalidate page every 60 seconds to reflect Shopify product changes
+export const revalidate = 60;
+
 export default async function MedaillonsPage() {
-  const supabase = createAdminClient();
+  // 1. Load products from Shopify (only tag:nachklang-app, active)
+  const products: AppProduct[] = await getAppProducts();
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('id, title, short_description, price_in_cents, gallery_images')
-    .eq('is_active', true)
-    .order('price_in_cents', { ascending: true });
-
-  // Load stock counts for all products in one query (group by product_id)
-  // We query codes that are produced + in_stock for each product
+  // 2. Load stock counts per shopify_product_id from Supabase
+  //    medallion_codes are still managed in Supabase for inventory tracking
   const stockMap: Record<string, number> = {};
-  if (products && products.length > 0) {
-    const productIds = products.map(p => p.id);
+  if (products.length > 0) {
+    const supabase = createAdminClient();
+    const shopifyIds = products.map((p) => p.shopifyProductId);
+
     const { data: stockRows } = await supabase
       .from('medallion_codes')
-      .select('product_id')
-      .in('product_id', productIds)
+      .select('shopify_product_id')
+      .in('shopify_product_id', shopifyIds)
       .eq('inventory_status', 'in_stock');
 
-    // Count per product_id
-    (stockRows || []).forEach((row: { product_id: string | null }) => {
-      if (row.product_id) {
-        stockMap[row.product_id] = (stockMap[row.product_id] || 0) + 1;
+    (stockRows || []).forEach((row: { shopify_product_id: string | null }) => {
+      if (row.shopify_product_id) {
+        stockMap[row.shopify_product_id] = (stockMap[row.shopify_product_id] || 0) + 1;
       }
     });
   }
@@ -52,25 +63,26 @@ export default async function MedaillonsPage() {
 
       {/* Product Grid */}
       <div className="max-w-6xl mx-auto px-6 py-16">
-        {products && products.length > 0 ? (
+        {products.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map(product => {
-              const img = product.gallery_images?.[0];
-              const stock = stockMap[product.id] ?? 0;
-              const inStock = stock > 0;
+            {products.map((product) => {
+              const img = product.images[0];
+              // Stock: fall back to "in stock" display if no medallion codes are set up yet
+              const stock = stockMap[product.shopifyProductId] ?? null;
+              const outOfStock = stock !== null && stock === 0;
 
               return (
                 <Link
-                  key={product.id}
-                  href={`/medaillons/${product.id}`}
+                  key={product.handle}
+                  href={`/medaillons/${product.handle}`}
                   className="group bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 >
                   {/* Product Image */}
                   <div className="relative aspect-square bg-stone-100 overflow-hidden">
                     {img ? (
                       <Image
-                        src={img}
-                        alt={product.title}
+                        src={img.url}
+                        alt={img.altText || product.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -80,8 +92,8 @@ export default async function MedaillonsPage() {
                       </div>
                     )}
 
-                    {/* Stock badge overlay */}
-                    {!inStock && (
+                    {/* Out of stock overlay */}
+                    {outOfStock && (
                       <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
                         <span className="bg-white/90 backdrop-blur-sm text-slate-600 text-sm font-semibold px-4 py-2 rounded-full border border-slate-200 shadow-sm">
                           Ausverkauft
@@ -92,15 +104,26 @@ export default async function MedaillonsPage() {
 
                   {/* Product Info */}
                   <div className="p-5">
-                    <h3 className="font-serif text-xl text-slate-900 mb-1 group-hover:text-sage-700 transition">{product.title}</h3>
-                    {product.short_description && (
-                      <p className="text-slate-500 text-sm line-clamp-2 mb-3 font-light">{product.short_description}</p>
+                    <h3 className="font-serif text-xl text-slate-900 mb-1 group-hover:text-sage-700 transition">
+                      {product.title}
+                    </h3>
+                    {product.shortDescription && (
+                      <p className="text-slate-500 text-sm line-clamp-2 mb-3 font-light">
+                        {product.shortDescription}
+                      </p>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-medium text-slate-900">
-                        CHF {((product.price_in_cents || 0) / 100).toFixed(2)}
-                      </span>
-                      {!inStock && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-medium text-slate-900">
+                          CHF {(product.price / 100).toFixed(2)}
+                        </span>
+                        {product.compareAtPrice && product.compareAtPrice > product.price && (
+                          <span className="text-sm text-slate-400 line-through">
+                            CHF {(product.compareAtPrice / 100).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      {outOfStock && (
                         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-stone-100 text-stone-500">
                           Ausverkauft
                         </span>

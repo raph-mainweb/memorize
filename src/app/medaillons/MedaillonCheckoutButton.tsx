@@ -5,12 +5,22 @@ import { ShoppingBag, AlertCircle } from 'lucide-react';
 import MemorialPickerModal from './MemorialPickerModal';
 
 interface Props {
-  productId: string;
+  shopifyHandle: string;
+  shopifyProductId: string;
+  shopifyVariantId: string | null;
   productTitle: string;
-  stock: number; // Available units (production_status=produced, inventory_status=in_stock)
+  price: number; // in Rappen — for display in modal
+  stock: number; // Available units (inventory_status=in_stock)
 }
 
-export default function MedaillonCheckoutButton({ productId, productTitle, stock }: Props) {
+export default function MedaillonCheckoutButton({
+  shopifyHandle,
+  shopifyProductId,
+  shopifyVariantId,
+  productTitle,
+  price,
+  stock,
+}: Props) {
   const [open, setOpen] = useState(false);
   const inStock = stock > 0;
 
@@ -43,8 +53,11 @@ export default function MedaillonCheckoutButton({ productId, productTitle, stock
 
       {open && (
         <MemorialPickerModal
-          productId={productId}
+          shopifyHandle={shopifyHandle}
+          shopifyProductId={shopifyProductId}
+          shopifyVariantId={shopifyVariantId}
           productTitle={productTitle}
+          price={price}
           onClose={() => setOpen(false)}
         />
       )}

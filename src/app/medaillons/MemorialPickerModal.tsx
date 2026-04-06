@@ -6,8 +6,11 @@ import { createClient } from '@/utils/supabase/client';
 import { X, Loader2, Plus, ChevronRight, FileHeart, LogIn, MapPin } from 'lucide-react';
 
 interface Props {
-  productId: string;
+  shopifyHandle: string;
+  shopifyProductId: string;
+  shopifyVariantId: string | null;
   productTitle: string;
+  price: number; // in Rappen — for display only
   onClose: () => void;
 }
 
@@ -32,7 +35,7 @@ interface Address {
 
 type Step = 'loading' | 'unauthenticated' | 'no-pages' | 'pick' | 'address' | 'checkout';
 
-export default function MemorialPickerModal({ productId, productTitle, onClose }: Props) {
+export default function MemorialPickerModal({ shopifyHandle, shopifyProductId, shopifyVariantId, productTitle, onClose }: Props) {
   const [step, setStep] = useState<Step>('loading');
   const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -114,10 +117,11 @@ export default function MemorialPickerModal({ productId, productTitle, onClose }
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        product_id: productId,
+        shopify_handle: shopifyHandle,
+        shopify_product_id: shopifyProductId,
+        shopify_variant_id: shopifyVariantId,
         memorial_id: selected,
         shipping: {
-          // Flat format matching checkout route + fulfill page
           first_name: address.first_name,
           last_name: address.last_name,
           address_line1: address.address_line1,
