@@ -2,36 +2,42 @@
  * Shopify Admin GraphQL Client
  *
  * Authentication: X-Shopify-Access-Token
- * The SHOPIFY_CLIENT_SECRET env var holds a Private App Admin API access token (shpss_ prefix).
- * This is used directly as a bearer token — no OAuth flow required.
+ * Token source: lib/shopify/token.ts (env var > in-memory cache > Supabase DB)
+ * The token is obtained via OAuth Authorization Code Flow — see /api/shopify/install
  *
- * This file is the ONLY place in the codebase that reads Shopify credentials.
- * All Shopify API calls must go through `shopifyFetch`. Never expose credentials client-side.
+ * This file is the ONLY place that makes Shopify API calls.
+ * All Shopify interactions are server-side only. Never import from Client Components.
  */
 
-const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN!;
-const SHOPIFY_ACCESS_TOKEN = process.env.SHOPIFY_CLIENT_SECRET!; // shpss_ = Admin API token
-const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2026-04';
+import { getShopifyAccessToken } from './token';
 
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN!;
+const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2026-04';
 const SHOPIFY_GRAPHQL_URL = `https://${SHOPIFY_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`;
 
-if (!SHOPIFY_DOMAIN || !SHOPIFY_ACCESS_TOKEN) {
-  console.warn('[Shopify] Missing SHOPIFY_SHOP_DOMAIN or SHOPIFY_CLIENT_SECRET env vars.');
+if (!SHOPIFY_DOMAIN) {
+  console.warn('[Shopify] Missing SHOPIFY_SHOP_DOMAIN env var.');
 }
 
-interface ShopifyFetchOptions {
+export interface ShopifyFetchOptions {
   query: string;
   variables?: Record<string, unknown>;
-  /** Next.js fetch cache strategy. Default: revalidate every 60s. */
+  /** Next.js fetch revalidation in seconds. Use false to disable caching. Default: 60s */
   revalidate?: number | false;
 }
 
 /**
  * Executes a Shopify Admin GraphQL query server-side.
- * Throws on HTTP errors or GraphQL errors.
+ *
+ * - Resolves the access token via token manager (env > cache > DB)
+ * - Throws on network errors, HTTP errors, or GraphQL errors
+ * - If Shopify is not yet connected (no token), throws with setup instructions
  */
 export async function shopifyFetch<T = unknown>(options: ShopifyFetchOptions): Promise<T> {
   const { query, variables, revalidate = 60 } = options;
+
+  // Resolve token (async — may read from Supabase on first call)
+  const accessToken = await getShopifyAccessToken();
 
   let response: Response;
   try {
@@ -39,14 +45,14 @@ export async function shopifyFetch<T = unknown>(options: ShopifyFetchOptions): P
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN,
+        'X-Shopify-Access-Token': accessToken,
       },
       body: JSON.stringify({ query, variables }),
       next: revalidate === false ? { revalidate: 0 } : { revalidate },
     });
   } catch (networkErr) {
     console.error('[Shopify] Network error:', networkErr);
-    throw new Error('[Shopify] Network request failed. Check domain and connectivity.');
+    throw new Error('[Shopify] Network request failed. Check SHOPIFY_SHOP_DOMAIN and connectivity.');
   }
 
   if (!response.ok) {
