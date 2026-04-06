@@ -9,7 +9,6 @@
  */
 
 import { getAppProducts } from '@/lib/shopify/products';
-import { createAdminClient } from '@/utils/supabase/admin';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Package } from 'lucide-react';
@@ -27,25 +26,9 @@ export default async function MedaillonsPage() {
   // 1. Load products from Shopify (only tag:nachklang-app, active)
   const products: AppProduct[] = await getAppProducts();
 
-  // 2. Load stock counts per shopify_product_id from Supabase
-  //    medallion_codes are still managed in Supabase for inventory tracking
-  const stockMap: Record<string, number> = {};
-  if (products.length > 0) {
-    const supabase = createAdminClient();
-    const shopifyIds = products.map((p) => p.shopifyProductId);
-
-    const { data: stockRows } = await supabase
-      .from('medallion_codes')
-      .select('shopify_product_id')
-      .in('shopify_product_id', shopifyIds)
-      .eq('inventory_status', 'in_stock');
-
-    (stockRows || []).forEach((row: { shopify_product_id: string | null }) => {
-      if (row.shopify_product_id) {
-        stockMap[row.shopify_product_id] = (stockMap[row.shopify_product_id] || 0) + 1;
-      }
-    });
-  }
+  // Stock display comes from Shopify variant.availableForSale
+  // medallion_codes is used for actual QR code assignment at fulfillment (webhooks)
+  // — not for frontend display. Shopify is the source of truth for display availability.
 
   return (
     <div className="flex-grow bg-stone-50">
@@ -67,9 +50,9 @@ export default async function MedaillonsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => {
               const img = product.images[0];
-              // Stock: fall back to "in stock" display if no medallion codes are set up yet
-              const stock = stockMap[product.shopifyProductId] ?? null;
-              const outOfStock = stock !== null && stock === 0;
+              // Stock display: use Shopify variant.availableForSale
+              // Shopify manages display availability (set to 0 in Shopify to show "Ausverkauft")
+              const outOfStock = product.variants[0]?.available === false;
 
               return (
                 <Link

@@ -12,7 +12,6 @@
  */
 
 import { getAppProductByHandle, getAppProducts } from '@/lib/shopify/products';
-import { createAdminClient } from '@/utils/supabase/admin';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -41,15 +40,11 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product) notFound();
 
-  // Stock: how many medallion_codes are in_stock for this Shopify product
-  const supabase = createAdminClient();
-  const { count: stock } = await supabase
-    .from('medallion_codes')
-    .select('*', { count: 'exact', head: true })
-    .eq('shopify_product_id', product.shopifyProductId)
-    .eq('inventory_status', 'in_stock');
-
-  const availableStock = stock ?? 0;
+  // Stock display: use Shopify variant.available
+  // Shopify is the source of truth for display availability.
+  // medallion_codes handles actual QR-code assignment on purchase (webhook).
+  const firstVariant = product.variants[0];
+  const availableStock = firstVariant?.available !== false ? 1 : 0;
 
   return (
     <div className="flex-grow bg-white">

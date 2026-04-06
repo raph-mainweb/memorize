@@ -73,18 +73,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       if (available) {
         codeId = available.id;
         codeCode = available.code;
+      } else {
+        console.warn(`[Webhook] No in_stock code found for shopify_product_id=${shopifyProductId} — order logged as pending_stock`);
       }
-    }
-
-    // Fallback: any available code regardless of product
-    if (!codeId) {
-      const { data: anyCode } = await supabase
-        .from('medallion_codes')
-        .select('id, code')
-        .eq('inventory_status', 'in_stock')
-        .limit(1)
-        .single();
-      if (anyCode) { codeId = anyCode.id; codeCode = anyCode.code; }
+    } else {
+      console.warn(`[Webhook] No shopify_product_id in metadata — cannot assign product-specific code`);
     }
 
     if (codeId) {
@@ -97,8 +90,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           status: 'assigned',
           assigned_user_id: userId,
           assigned_page_id: memorialId || null,
-          connected_at: now,
           assigned_at: now,
+          stripe_session_id: session.id,
         })
         .eq('id', codeId);
 
