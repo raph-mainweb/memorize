@@ -28,15 +28,26 @@ export async function GET(req: NextRequest) {
   const requestSecret = searchParams.get('secret');
 
   if (!INSTALL_SECRET) {
-    // No secret configured → block entirely to prevent accidental installs
-    return new NextResponse(
-      'SHOPIFY_INSTALL_SECRET env var is not set. Configure it before triggering the install flow.',
+    return NextResponse.json(
+      {
+        error: 'Setup required',
+        message: 'SHOPIFY_INSTALL_SECRET env var is not set in Vercel.',
+        action: 'Add SHOPIFY_INSTALL_SECRET to your Vercel environment variables, then redeploy.',
+      },
       { status: 403 }
     );
   }
 
-  if (requestSecret !== INSTALL_SECRET) {
-    return new NextResponse('Forbidden', { status: 403 });
+  if (!requestSecret || requestSecret !== INSTALL_SECRET) {
+    return NextResponse.json(
+      {
+        error: 'Forbidden',
+        message: 'The ?secret= parameter does not match SHOPIFY_INSTALL_SECRET.',
+        hint: 'Use the exact value you set for SHOPIFY_INSTALL_SECRET in Vercel.',
+        example: `${req.nextUrl.origin}/api/shopify/install?secret=YOUR_INSTALL_SECRET`,
+      },
+      { status: 403 }
+    );
   }
 
   // ── Validate Configuration ───────────────────────────────────────────────
