@@ -20,7 +20,7 @@ export interface ShopifyVariantRaw {
   price: string;            // "149.00" — Shopify returns prices as decimal strings
   compareAtPrice: string | null;
   availableForSale: boolean;
-  requiresShipping: boolean;
+  // requiresShipping removed — not available on ProductVariant in current API version
 }
 
 export interface ShopifyMetafield {
@@ -43,7 +43,10 @@ export interface ShopifyProductRaw {
   variants: {
     edges: { node: ShopifyVariantRaw }[];
   };
-  metafields: (ShopifyMetafield | null)[];
+  // metafields returned as connection (edges → node), not flat array
+  metafields: {
+    edges: { node: ShopifyMetafield | null }[];
+  } | null;
 }
 
 // ── Internal App Types ─────────────────────────────────────────────────────────

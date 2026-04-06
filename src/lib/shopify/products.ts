@@ -44,17 +44,17 @@ const PRODUCT_FIELDS = `
         price
         compareAtPrice
         availableForSale
-        requiresShipping
       }
     }
   }
-  metafields(identifiers: [
-    { namespace: "nachklang", key: "short_description" }
-    { namespace: "nachklang", key: "usp" }
-  ]) {
-    key
-    namespace
-    value
+  metafields(first: 20) {
+    edges {
+      node {
+        key
+        namespace
+        value
+      }
+    }
   }
 `;
 
@@ -112,7 +112,7 @@ function mapVariant(raw: ShopifyVariantRaw): AppVariant {
     price: chfToRappen(raw.price),
     compareAtPrice: raw.compareAtPrice ? chfToRappen(raw.compareAtPrice) : null,
     available: raw.availableForSale,
-    requiresShipping: raw.requiresShipping,
+    requiresShipping: true, // physical medallion products always require shipping
   };
 }
 
@@ -121,10 +121,10 @@ function mapProduct(raw: ShopifyProductRaw): AppProduct {
   const firstVariant = variants[0];
   const images = raw.images.edges.map((e) => e.node);
 
-  // Parse optional Shopify metafields
-  const metafields = (raw.metafields || []).filter(Boolean);
-  const shortDescMeta = metafields.find((m) => m?.key === 'short_description');
-  const uspMeta = metafields.find((m) => m?.key === 'usp');
+  // Parse metafields from edges→node connection (filter by namespace+key in code)
+  const metafieldNodes = (raw.metafields?.edges || []).map((e) => e.node).filter(Boolean);
+  const shortDescMeta = metafieldNodes.find((m) => m?.namespace === 'nachklang' && m?.key === 'short_description');
+  const uspMeta = metafieldNodes.find((m) => m?.namespace === 'nachklang' && m?.key === 'usp');
 
   let uspItems: string[] = [];
   try {
@@ -133,7 +133,7 @@ function mapProduct(raw: ShopifyProductRaw): AppProduct {
       if (Array.isArray(parsed)) uspItems = parsed;
     }
   } catch {
-    // Ignore malformed metafield — degrade gracefully
+    // Ignore malformed metafield
   }
 
   return {
@@ -151,7 +151,7 @@ function mapProduct(raw: ShopifyProductRaw): AppProduct {
     tags: raw.tags || [],
     variants,
     productType: raw.productType || '',
-    requiresShipping: variants.some((v) => v.requiresShipping),
+    requiresShipping: true, // physical medallion products always require shipping
     active: raw.status === 'ACTIVE',
   };
 }
