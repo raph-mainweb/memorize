@@ -34,13 +34,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       shopify_handle,
-      shopify_product_id,
       shopify_variant_id,
       memorial_id,
       shipping,
     } = body as {
       shopify_handle: string;
-      shopify_product_id?: string;
+      shopify_product_id?: string; // received but authoritative value comes from Shopify API
       shopify_variant_id?: string | null;
       memorial_id?: string;
       shipping?: {

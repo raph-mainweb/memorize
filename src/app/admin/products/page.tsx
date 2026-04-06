@@ -9,7 +9,6 @@
  */
 
 import { getAppProducts } from '@/lib/shopify/products';
-import Link from 'next/link';
 import { ExternalLink, Package } from 'lucide-react';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN || '';
