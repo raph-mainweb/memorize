@@ -1,4 +1,37 @@
 import { createAdminClient } from '@/utils/supabase/admin';
+import Stripe from 'stripe';
+
+// Fetches total succeeded payment volume from Stripe for a given time window (Unix timestamps)
+async function getStripeRevenue(stripe: Stripe, from: number, to: number): Promise<number> {
+  try {
+    let total = 0;
+    let hasMore = true;
+    let startingAfter: string | undefined = undefined;
+
+    while (hasMore) {
+      const charges = await stripe.charges.list({
+        created: { gte: from, lte: to },
+        limit: 100,
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
+      });
+
+      for (const charge of charges.data) {
+        if (charge.status === 'succeeded' && !charge.refunded) {
+          total += charge.amount; // amount is in Rappen (smallest CHF unit)
+        }
+      }
+
+      hasMore = charges.has_more;
+      if (charges.data.length > 0) {
+        startingAfter = charges.data[charges.data.length - 1].id;
+      }
+    }
+
+    return total; // in Rappen
+  } catch {
+    return -1; // Signal: Stripe error
+  }
+}
 
 export default async function AdminDashboard() {
   const supabase = createAdminClient(); // Bypasses RLS
@@ -7,6 +40,32 @@ export default async function AdminDashboard() {
   const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
   const { count: memorialCount } = await supabase.from('memorial_pages').select('*', { count: 'exact', head: true });
   const { count: stockCount } = await supabase.from('medallion_codes').select('*', { count: 'exact', head: true }).eq('inventory_status', 'in_stock');
+
+  // Stripe Revenue: this month vs last month
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    apiVersion: '2023-10-16' as any,
+  });
+
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+  const [revenueThisMonth, revenueLastMonth] = await Promise.all([
+    getStripeRevenue(stripe, Math.floor(thisMonthStart.getTime() / 1000), Math.floor(now.getTime() / 1000)),
+    getStripeRevenue(stripe, Math.floor(lastMonthStart.getTime() / 1000), Math.floor(lastMonthEnd.getTime() / 1000)),
+  ]);
+
+  // Format Rappen → "CHF 1'234.50"
+  function formatCHF(rappen: number): string {
+    if (rappen < 0) return 'CHF —';
+    return new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(rappen / 100);
+  }
+
+  const trendPercent = revenueLastMonth > 0
+    ? Math.round(((revenueThisMonth - revenueLastMonth) / revenueLastMonth) * 100)
+    : null;
 
   const { data: recentOrders } = await supabase
     .from('medallion_orders')
@@ -37,9 +96,17 @@ export default async function AdminDashboard() {
             {stockCount || 0}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 opacity-70">
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
           <h3 className="text-sm font-medium text-slate-500 mb-1">Umsatz (Dieser Monat)</h3>
-          <p className="text-4xl font-serif text-slate-900">CHF ---</p>
+          <p className="text-4xl font-serif text-slate-900">{formatCHF(revenueThisMonth)}</p>
+          {trendPercent !== null && (
+            <p className={`text-xs mt-2 font-medium ${trendPercent >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              {trendPercent >= 0 ? '↑' : '↓'} {Math.abs(trendPercent)}% vs. Vormonat ({formatCHF(revenueLastMonth)})
+            </p>
+          )}
+          {trendPercent === null && revenueLastMonth === 0 && revenueThisMonth >= 0 && (
+            <p className="text-xs mt-2 text-slate-400">Kein Vormonat-Vergleich</p>
+          )}
         </div>
       </div>
 
