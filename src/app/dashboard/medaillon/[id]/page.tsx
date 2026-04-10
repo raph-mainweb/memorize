@@ -27,11 +27,12 @@ export default async function MedaillonDetailPage({ params }: { params: { id: st
   if (!memorial) notFound();
 
   // Find the medallion assigned to this memorial
+  // Check both assigned_page_id AND memorial_id (legacy), primary field is inventory_status
   const { data: medallion } = await adminDb
     .from('medallion_codes')
     .select('id, code, status, inventory_status, qr_url, assigned_at, connected_at, product_id')
     .or(`assigned_page_id.eq.${params.id},memorial_id.eq.${params.id}`)
-    .eq('status', 'assigned')
+    .in('inventory_status', ['assigned', 'shipped', 'delivered', 'claimed_by_customer', 'assigned_to_memorial'])
     .maybeSingle();
 
   const statusLabel: Record<string, { label: string; color: string; icon: typeof Package }> = {

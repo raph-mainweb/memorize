@@ -6,7 +6,7 @@ export default async function AdminDashboard() {
   // Fetch KPI Data
   const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
   const { count: memorialCount } = await supabase.from('memorial_pages').select('*', { count: 'exact', head: true });
-  const { count: stockCount } = await supabase.from('medallion_codes').select('*', { count: 'exact', head: true }).eq('status', 'available');
+  const { count: stockCount } = await supabase.from('medallion_codes').select('*', { count: 'exact', head: true }).eq('inventory_status', 'in_stock');
 
   const { data: recentOrders } = await supabase
     .from('medallion_orders')

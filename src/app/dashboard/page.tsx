@@ -26,29 +26,32 @@ export default async function DashboardOverview() {
 
   if (memorialIds.length > 0) {
     const adminDb = createAdminClient();
-    // Check assigned_page_id (new field)
+    // Primary: check assigned_page_id with inventory_status (new field)
     const { data: byPageId } = await adminDb
       .from('medallion_codes')
       .select('id, code, assigned_page_id, memorial_id')
-      .eq('inventory_status', 'assigned')
+      .in('inventory_status', ['assigned', 'shipped', 'delivered', 'claimed_by_customer', 'assigned_to_memorial'])
       .in('assigned_page_id', memorialIds);
 
     (byPageId || []).forEach(c => {
       if (c.assigned_page_id) medallionMap[c.assigned_page_id] = c.code;
     });
 
-    // Also check original memorial_id field as fallback
-    const { data: byMemorialId } = await adminDb
-      .from('medallion_codes')
-      .select('id, code, memorial_id')
-      .eq('status', 'assigned')
-      .in('memorial_id', memorialIds);
+    // Fallback: legacy memorial_id field OR old status field
+    const assignedPageIds = Object.keys(medallionMap);
+    const remainingIds = memorialIds.filter(id => !assignedPageIds.includes(id));
+    if (remainingIds.length > 0) {
+      const { data: byMemorialId } = await adminDb
+        .from('medallion_codes')
+        .select('id, code, memorial_id, assigned_page_id')
+        .in('status', ['assigned', 'shipped', 'delivered'])
+        .in('memorial_id', remainingIds);
 
-    (byMemorialId || []).forEach(c => {
-      if (c.memorial_id && !medallionMap[c.memorial_id]) {
-        medallionMap[c.memorial_id] = c.code;
-      }
-    });
+      (byMemorialId || []).forEach(c => {
+        const key = c.assigned_page_id || c.memorial_id;
+        if (key && !medallionMap[key]) medallionMap[key] = c.code;
+      });
+    }
   }
 
   return (

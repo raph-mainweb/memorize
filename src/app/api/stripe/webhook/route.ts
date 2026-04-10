@@ -81,15 +81,16 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     if (codeId) {
-      // 1b. Assign the code
+      // 1b. Assign the code — write BOTH status fields to keep them in sync
       const now = new Date().toISOString();
       const { error: assignError } = await supabase
         .from('medallion_codes')
         .update({
           inventory_status: 'assigned',
-          status: 'assigned',
+          status: 'assigned',          // kept in sync with inventory_status
           assigned_user_id: userId,
           assigned_page_id: memorialId || null,
+          memorial_id: memorialId || null, // legacy field fallback
           assigned_at: now,
           stripe_session_id: session.id,
         })
