@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
 }
 
 
+
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   const supabase = createAdminClient();
   const userId = session.client_reference_id;
