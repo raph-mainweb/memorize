@@ -82,7 +82,7 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
         {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
           <Link href="/wie-es-funktioniert" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
-            Wie funktioniert's
+            Wie funktioniert&apos;s
           </Link>
           <Link href="/medaillons" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
             QR-Medaillons

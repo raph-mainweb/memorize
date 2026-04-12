@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { ChevronRight, Heart, QrCode, Sparkles, Image as ImageIcon, Shield, BookOpen, Clock } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronRight, Heart, BookOpen, Clock } from 'lucide-react';
 
 export default function LandingPage() {
   return (
