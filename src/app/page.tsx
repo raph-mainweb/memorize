@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Heart, ChevronRight, PenLine, Lock, Wifi } from 'lucide-react';
+import { Heart, ChevronRight, PenLine, Lock, Wifi, CheckCircle2 } from 'lucide-react';
 
 export default function HeroSection() {
   return (
@@ -163,6 +163,67 @@ export default function HeroSection() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+          PRODUKTE / MEDAILLON SHOP
+      ════════════════════════════════════════════════ */}
+      <section id="medaillon" className="w-full py-20 md:py-32 bg-stone-50 border-t border-slate-100 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-brand-primary/5 blur-[120px] pointer-events-none rounded-full" />
+        
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="h2 font-heading font-medium text-brand-navy tracking-tight mb-4">Das Nachklang QR-Medaillon</h2>
+            <p className="text-slate-500 font-light text-lg md:text-xl">
+              Hochwertig, wetterfest und diskret. Die physische Brücke zur digitalen Gedenkseite deines Liebsten.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto bg-white rounded-[32px] border border-slate-200 shadow-xl shadow-brand-900/5 overflow-hidden flex flex-col md:flex-row">
+            
+            <div className="w-full md:w-1/2 bg-stone-100 flex items-center justify-center p-12 relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-tr from-brand-secondary/40 to-brand-primary/10"></div>
+               <img src="/images/startseite/memorial-card.png" alt="Medaillon" className="relative z-10 w-full max-w-xs drop-shadow-2xl rounded-2xl" />
+            </div>
+
+            <div className="w-full md:w-1/2 p-10 md:p-14 flex flex-col justify-center">
+              <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-6 border border-brand-100/50">
+                Premium Edition
+              </div>
+              <h3 className="text-3xl font-heading font-medium text-brand-navy mb-4">Erinnerungs-Paket</h3>
+              <p className="text-slate-500 font-light leading-relaxed mb-8">
+                Beinhaltet die dauerhafte Freischaltung der Gedenkseite ohne Folgekosten sowie das versandkostenfreie Marken-Medaillon.
+              </p>
+
+              <ul className="space-y-4 mb-10">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
+                  <span className="text-slate-600 font-light">Lebenslange Freischaltung (keine Abos)</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
+                  <span className="text-slate-600 font-light">Hochwertiges, wetterfestes QR-Medaillon</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
+                  <span className="text-slate-600 font-light">Extrastarkes 3M™-Klebepad inklusive</span>
+                </li>
+              </ul>
+
+              <div className="flex items-end justify-between border-t border-slate-100 pt-8 mt-auto">
+                <div>
+                  <div className="text-sm text-slate-400 font-light mb-1">Einmaliger Preis</div>
+                  <div className="text-4xl font-heading font-bold text-slate-900 leading-none tracking-tight">CHF 49<span className="text-xl text-slate-400 font-medium">.–</span></div>
+                </div>
+                <Link href="/dashboard/neu" className="btn btn-primary transition-transform hover:scale-105 shadow-md hover:shadow-xl">
+                  Jetzt bestellen
+                </Link>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
