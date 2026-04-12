@@ -8,97 +8,147 @@ export default function LandingPage() {
 
 
       {/* Hero Section */}
-      <section className="relative w-full px-6 lg:px-8 pt-40 pb-20 md:pt-48 md:pb-28 flex flex-col items-center text-center">
-        <div className="absolute top-0 w-full h-[80vh] bg-gradient-to-b from-sage-100/30 to-stone-50 -z-20" />
-        <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full bg-sage-200/40 blur-[100px] -z-10 mix-blend-multiply animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] rounded-full bg-stone-200/60 blur-[80px] -z-10 mix-blend-multiply animate-pulse" style={{ animationDuration: '10s' }} />
+      <section className="relative w-full px-4 pt-32 pb-16 md:pt-48 md:pb-24 flex flex-col items-center text-center bg-stone-50 overflow-visible z-10">
+        
+        {/* Subtle background glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-brand-primary/10 blur-[120px] -z-10 pointer-events-none" />
 
-        <div className="max-w-4xl animate-fade-in relative z-10 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-sm mb-8 text-sm text-sage-700 font-medium tracking-wide">
-            <Sparkles className="w-4 h-4" />
-            <span className="uppercase text-xs tracking-widest">Die moderne Art des Gedenkens</span>
-          </div>
+        <div className="max-w-4xl relative z-10 flex flex-col items-center animate-fade-in">
+          
+          <h2 className="subtitle text-brand-primary mb-6 tracking-wide opacity-90">
+            Die moderne Art des Gedenkens
+          </h2>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-slate-900 mb-8 leading-[1.1] tracking-tight">
+          <h1 className="text-5xl md:text-7xl lg:text-[5rem] font-serif text-brand-navy mb-8 leading-[1.1] tracking-tight">
             Erinnerungen, die <br className="hidden md:block" />
-            <span className="italic text-sage-600">niemals verblassen.</span>
+            <span className="text-brand-primary/90 opacity-90">niemals verblassen.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-            Schaffe einen würdevollen, digitalen Ort für die Erinnerung an deine Liebsten.
-            Direkt am Grab zugänglich durch unser wetterfestes QR-Medaillon.
+          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            Erstelle eine digitale Gedenkseite für einen geliebten Menschen — <br className="hidden md:block"/>
+            verbunden mit einem eleganten QR-Medaillon am Grabstein. Kostenlos <br className="hidden md:block"/>
+            starten, für immer online.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full md:w-auto animate-slide-up opacity-0" style={{ animationFillMode: 'forwards', animationDelay: '0.2s' }}>
-            <Link href="/dashboard/neu" className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-1">
-              Kostenlos beginnen
-              <ChevronRight className="w-5 h-5 opacity-80" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full md:w-auto">
+            <Link 
+              href="/dashboard/neu" 
+              className="w-full sm:w-auto bg-brand-primary text-white font-medium px-8 py-4 rounded-full transition shadow-md hover:shadow-xl hover:brightness-105 hover:-translate-y-0.5"
+            >
+              Gedenkseite erstellen
             </Link>
-            <Link href="#medaillon" className="w-full sm:w-auto bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-800 px-8 py-4 rounded-full font-medium hover:bg-white transition-all flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-1">
-              Das Medaillon entdecken
+            <Link 
+              href="#medaillon" 
+              className="w-full sm:w-auto bg-[#F5F3FA] text-brand-primary font-medium px-8 py-4 rounded-full transition hover:bg-[#EBE7F5]"
+            >
+              Medaillon Shop
             </Link>
           </div>
         </div>
       </section>
 
-      {/* The Medallion Showcase (Placeholder) */}
-      <section id="medaillon" className="w-full py-24 md:py-32 bg-slate-900 text-white relative flex flex-col items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-950"></div>
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full relative z-10">
-          <div className="grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
-
-            {/* Image Placeholder */}
-            <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-slate-800/50 flex items-center justify-center border border-slate-700 shadow-2xl backdrop-blur-sm group">
-              <div className="absolute inset-0 bg-gradient-to-tr from-slate-800/80 to-slate-700/20 transition-opacity group-hover:opacity-80"></div>
-
-              {/* Product image placeholder */}
-              <div className="relative z-10 flex flex-col items-center text-slate-400">
-                <ImageIcon className="w-20 h-20 mb-6 opacity-30 group-hover:opacity-60 transition-opacity group-hover:scale-110 duration-500" />
-                <span className="font-mono text-sm tracking-widest uppercase text-slate-300">Produktaufnahme Medaillon</span>
-                <span className="text-xs opacity-50 mt-3 text-center max-w-xs px-4">Hier steht das hochwertige Produktbild oder das interaktive 3D-Modell im Fokus.</span>
+      {/* The Asymmetric Grid Layout from Figma */}
+      <section className="w-full max-w-7xl mx-auto px-6 lg:px-8 pb-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 auto-rows-min items-stretch">
+          
+          {/* Left Column (col-span-4) */}
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8 lg:mt-12 justify-center">
+            
+            {/* Top Left: QR-Medaillon Card (White) */}
+            <div className="bg-white rounded-[32px] p-8 shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col items-center text-center relative overflow-hidden h-[340px]">
+              {/* Product mockups space */}
+              <div className="w-full flex-grow relative mb-4">
+                 <div className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-[180px] h-[140px] bg-brand-navy rounded-2xl rotate-[-8deg] shadow-lg flex items-center justify-center px-4">
+                    <span className="text-white text-xs font-mono font-bold tracking-widest opacity-80">QR-CODE MOCKUP</span>
+                 </div>
+                 {/* Floating Form UI if exists */}
+                 <div className="absolute bottom-[-15px] left-1/2 -translate-x-1/2 w-[220px] shadow-2xl rounded-xl z-20">
+                   <div className="bg-[#EBE7F5] border border-white p-3 rounded-xl shadow-lg border-opacity-50">
+                     <p className="text-[10px] font-bold text-brand-primary text-left">In 10 Minuten fertig</p>
+                     <p className="text-[8px] text-brand-primary/70 text-left mt-0.5">Gedenkseite erstellen, Foto hochladen und Seite fixieren</p>
+                   </div>
+                 </div>
               </div>
-
-              {/* Decorative lighting elements */}
-              <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-sage-500/20 shadow-[0_0_80px_rgba(138,148,136,0.3)] blur-2xl"></div>
-              <div className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full bg-white/10 blur-3xl"></div>
+              
+              <h3 className="font-semibold text-brand-navy text-lg mb-2 relative z-10">QR-Medaillon</h3>
+              <p className="text-xs text-slate-500 relative z-10 leading-relaxed font-light">Wetterfest und hochwertig — direkt am Grabstein, der Urne oder einem Gedenktafel anbringen.</p>
             </div>
 
-            {/* Text Content */}
-            <div className="flex flex-col">
-              <div className="inline-flex items-center gap-2 mb-6 text-sage-400">
-                <div className="w-8 h-[1px] bg-sage-400/50"></div>
-                <span className="text-sm font-medium tracking-widest uppercase text-sage-400">Qualität aus der Schweiz</span>
+            {/* Bottom Left: Gravestones (Image) */}
+            <div className="bg-stone-900 rounded-[32px] shadow-sm overflow-hidden relative h-[260px] group">
+              <div className="absolute inset-0 w-full h-full bg-slate-800">
+                <Image src="/images/startseite/gravestones.png" alt="Grabsteine" fill className="object-cover opacity-60 group-hover:opacity-70 transition-opacity duration-700 blur-[2px]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
               </div>
-              <h3 className="text-4xl md:text-5xl lg:text-6xl font-serif mb-8 leading-[1.1] text-white">
-                Ein zeitloses Zeichen <br />der Verbundenheit.
-              </h3>
-              <p className="text-slate-300 text-lg md:text-xl mb-10 leading-relaxed font-light">
-                Unser QR-Medaillon wird aus hochwertigem, wetterfestem Material gefertigt und fügt sich dezent in jede Grabgestaltung ein. Ein einfacher Scan mit dem Smartphone öffnet die dazugehörige Gedenkseite.
-              </p>
-
-              <ul className="space-y-8">
-                <li className="flex items-start gap-5">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center flex-shrink-0 shadow-inner">
-                    <Shield className="w-6 h-6 text-sage-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-white text-lg mb-1">Wetterfest & Langlebig</h4>
-                    <p className="text-slate-400 text-base leading-relaxed">Entwickelt für die Ewigkeit. Das Medaillon hält UV-Strahlung, Frost und jedem Wetter problemlos stand.</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-5">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center flex-shrink-0 shadow-inner">
-                    <QrCode className="w-6 h-6 text-sage-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-white text-lg mb-1">Universell kompatibel</h4>
-                    <p className="text-slate-400 text-base leading-relaxed">Der QR-Code funktioniert intuitiv mit jedem zukunftsfähigen Smartphone – ganz ohne vorherige App-Installation.</p>
-                  </div>
-                </li>
-              </ul>
+              <div className="absolute bottom-0 left-0 p-8 w-full z-10">
+                <h3 className="text-white font-medium text-xl mb-1.5 leading-tight">Ein würdevoller Ort der Erinnerung</h3>
+                <p className="text-white/70 text-xs font-light">Damit die, die nicht da sein können, trotzdem teilhaben.</p>
+              </div>
             </div>
 
           </div>
+
+          {/* Center Column: Phone Mockup (col-span-4) */}
+          <div className="lg:col-span-4 flex justify-center items-center h-full max-h-[700px]">
+            <div className="relative w-full max-w-[320px] aspect-[1/2.1] rounded-[38px] shadow-[0_30px_60px_rgba(0,0,0,0.15)] border-[6px] border-black bg-white overflow-hidden transform hover:-translate-y-2 transition-transform duration-500 ease-out mx-auto">
+              {/* Top Notch Area */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[40%] h-[20px] bg-black rounded-b-xl z-20"></div>
+              
+              {/* The Phone Screen */}
+              <div className="relative w-full h-full bg-stone-50 overflow-hidden">
+                <Image 
+                  src="/images/startseite/phone-mockup.png" 
+                  alt="Gedenkseite auf dem Smartphone" 
+                  fill 
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (col-span-4) */}
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8 lg:mt-12 justify-center">
+            
+            {/* Top Right: Digitale Gedenkseite Card */}
+            <div className="bg-white rounded-[32px] p-8 shadow-sm hover:shadow-md transition-shadow border border-slate-100 relative overflow-hidden h-[340px]">
+              <h3 className="font-semibold text-brand-navy text-lg mb-2 relative z-10 text-center">Digitale Gedenkseite</h3>
+              <p className="text-xs text-slate-500 mb-6 text-center relative z-10 font-light leading-relaxed">
+                Fotos, Lebensgeschichte, Geburts- und Sterbedatum, Grabadresse und persönliche Erinnerungen — an einem würdevollen Ort online.
+              </p>
+              
+              {/* Macbook / Builder mockup */}
+              <div className="absolute bottom-[-10px] left-0 right-0 h-[200px] flex justify-center flex-col items-center">
+                 <div className="relative w-[110%] h-[200px] translate-x-[5%] rotate-[-12deg]">
+                   <Image 
+                     src="/images/startseite/builder-macbook.png" 
+                     alt="Builder Interface" 
+                     fill 
+                     className="object-contain object-bottom drop-shadow-2xl opacity-90" 
+                   />
+                 </div>
+              </div>
+            </div>
+
+            {/* Bottom Right: Scanning Phone */}
+            <div className="bg-white rounded-[32px] shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col h-[260px] overflow-hidden">
+              <div className="relative h-[140px] w-full bg-stone-100 flex-shrink-0 flex items-center justify-center">
+                <div className="absolute inset-0 opacity-80" style={{ backgroundImage: "linear-gradient(#eae6f4 1px, transparent 1px), linear-gradient(90deg, #eae6f4 1px, transparent 1px)", backgroundSize: "20px 20px"}}></div>
+                <Image 
+                  src="/images/startseite/scan-mockup.png" 
+                  alt="QR Code Scan" 
+                  fill 
+                  className="object-contain p-4 mix-blend-multiply" 
+                />
+              </div>
+              <div className="px-6 py-5 text-center flex-grow flex flex-col justify-center">
+                <h3 className="font-semibold text-brand-navy text-base mb-1">Für immer zugänglich</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-light">Besucher scannen den QR-Code mit dem Handy — keine App, kein Login nötig. Die Gedenkseite öffnet sich sofort.</p>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 

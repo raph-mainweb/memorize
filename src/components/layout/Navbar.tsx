@@ -80,37 +80,43 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
         <LogoArea />
 
         {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/wie-es-funktioniert" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">
-            Wie funktionierts
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          <Link href="/wie-es-funktioniert" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
+            Wie funktioniert's
           </Link>
-          <Link href="/medaillons" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">
-            Medaillons
+          <Link href="/medaillons" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
+            QR-Medaillons
           </Link>
-          <Link href="/ueber-uns" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">
+          <Link href="/ueber-uns" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
             Über uns
+          </Link>
+          <Link href="/partner" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
+            Für Partner
+          </Link>
+          <Link href="/faq" className="text-sm font-medium text-slate-700 hover:text-brand-primary transition-colors">
+            FAQ
           </Link>
         </div>
 
         {/* Desktop Auth */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
           {!user ? (
             <>
-              <Link href="/auth/login" className="text-sm font-medium text-slate-600 hover:text-brand-700 transition-colors">
+              <Link href="/auth/login" className="bg-brand-secondary/50 text-brand-navy hover:bg-brand-secondary text-sm font-medium py-2.5 px-6 rounded-full transition-colors">
                 Anmelden
               </Link>
               <Link
                 href="/dashboard/neu"
-                className="btn-primary text-sm py-2 px-5"
+                className="btn-primary text-sm py-2.5 px-6 flex items-center gap-1.5"
               >
-                Gedenkseite erstellen
+                Gedenkseite erstellen <span className="text-base font-light leading-none">+</span>
               </Link>
             </>
           ) : (
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard/neu"
-                className="btn-secondary text-sm py-2 px-5"
+                className="btn-primary text-sm py-2 px-5"
               >
                 + Neue Seite
               </Link>
