@@ -19,21 +19,9 @@ export default async function SettingsPage() {
     .eq('key', 'brand_logo')
     .maybeSingle();
 
-  // Fetch colors
-  const { data: colorSetting } = await supabase
-    .from('system_settings')
-    .select('value')
-    .eq('key', 'brand_colors')
-    .maybeSingle();
-
   const currentAmount  = priceSetting?.value?.amount  || 4900;
   const currentDisplay = currentAmount / 100;
   const currentLogoUrl  = logoSetting?.value?.url  || '';
-  const currentColors = {
-    primary:   colorSetting?.value?.primary   || '#968cb5',
-    secondary: colorSetting?.value?.secondary || '#eae6f4',
-    navy:      colorSetting?.value?.navy      || '#1e2b5e',
-  };
 
   // Server action: update price
   async function updatePrice(formData: FormData) {
@@ -59,7 +47,6 @@ export default async function SettingsPage() {
         {/* ─── Branding: Logo + Colors (Client Component) ─────────── */}
         <BrandingClient
           initialLogoUrl={currentLogoUrl}
-          initialColors={currentColors}
         />
 
         {/* ─── Price Setting (Server Action) ───────────────────────── */}

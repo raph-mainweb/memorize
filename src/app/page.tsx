@@ -9,24 +9,14 @@ export default function HeroSection() {
         {/* ── Background image + white gradient overlay ── */}
         <div className="hero-image hero-gradient absolute inset-0 z-0" />
 
-        {/* ── Decorative SVG line ── */}
-        <div
-          className="absolute left-0 right-0 z-10 pointer-events-none"
-          style={{ top: '220px' }}
-        >
-          <img
-            src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/64952f864bea1b9f5703a964_banner-bg-line.svg"
-            alt=""
-            className="w-full"
-          />
-        </div>
+
 
         {/* ── Hero Text Content ── */}
         <div className="relative z-20 flex flex-col items-center text-center px-4 pt-20 pb-6 max-w-3xl mx-auto">
           <p className="font-script text-brand-primary text-2xl md:text-3xl mb-4 tracking-wide">
             Die moderne Art des Gedenkens
           </p>
-          <h1 className="font-heading font-bold text-brand-navy text-5xl md:text-7xl leading-[1.1] tracking-tight mb-6">
+          <h1 className="font-heading text-brand-navy text-5xl md:text-7xl leading-[1.1] tracking-tight mb-6">
             Erinnerungen, die{' '}
             <span className="text-brand-primary">niemals verblassen.</span>
           </h1>
@@ -53,70 +43,61 @@ export default function HeroSection() {
 
         {/* ── GRID ── */}
         <div className="relative z-20 max-w-6xl mx-auto px-4 pb-20">
-          <div className="home-hero-grid">
+          <div className="bento-grid">
 
             {/* Phone – grid-area: 1/2/5/3 */}
             <div className="phone-holder flex justify-center">
               <img
                 src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/Ueberschrift-1.png"
                 alt="Gedenkseite auf dem Smartphone"
-                className="w-[220px] md:w-[260px] object-contain drop-shadow-2xl"
+                className="object-contain drop-shadow-2xl"
               />
             </div>
 
-            {/* Card 1 – QR Medaillon – grid-area: 3/1/4/2 */}
-            <div className="card-one card bg-white rounded-2xl border border-slate-100 overflow-hidden relative p-6 flex flex-col gap-3">
-              {/* glow */}
-              <div className="card-glow-2 absolute top-[-60px] left-[-60px] w-[280px] h-[280px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(5,32,74,0.18) 0%, transparent 65%)' }}
-              />
+            {/* Card 1 – QR Medaillon */}
+            <div className="bentocard card-one">
               <img
                 src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/memorial-card.png"
                 alt="QR Medaillon"
                 className="w-full rounded-xl object-cover"
               />
-              <div className="flex flex-col gap-1">
+              <div className="bentocard-content text-center">
                 <h3 className="font-heading font-semibold text-brand-navy text-lg">QR-Medaillon</h3>
                 <p className="text-sm text-slate-500 font-light leading-relaxed">
                   Wetterfest und hochwertig — direkt am Grabstein, der Urne oder einem Gedenktafel anbringen.
                 </p>
               </div>
+
+              <div className="card-glow-2" />
             </div>
 
-            {/* Card 2 – Digitale Gedenkseite – grid-area: 3/3/5/4 */}
-            <div className="card-two card bg-white rounded-2xl border border-slate-100 overflow-hidden relative flex flex-col">
-              {/* glow */}
-              <div className="card-glow absolute bottom-[-60px] right-[-60px] pointer-events-none rounded-full"
-                style={{
-                  width: 'calc(100% + 60px)',
-                  height: '380px',
-                  background: 'radial-gradient(circle, rgba(180,151,214,0.2) 0%, transparent 65%)',
-                }}
-              />
-              <div className="p-6 flex flex-col gap-2">
+            {/* Card 2 – Dashboard */}
+            <div className="bentocard card-two">
+              <div className="bentocard-content text-center">
                 <h3 className="font-heading font-semibold text-brand-navy text-lg">Digitale Gedenkseite</h3>
                 <p className="text-sm text-slate-500 font-light leading-relaxed">
                   Fotos, Lebensgeschichte, Geburts- und Sterbedatum, Grabadresse und persönliche Erinnerungen — an einem würdevollen Ort online.
                 </p>
               </div>
-              <div className="mt-auto overflow-hidden">
-                <img
-                  src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/digitale-gedenkseite-1.png"
-                  alt="Digitale Gedenkseite Builder"
-                  className="w-full object-cover object-top"
-                />
-              </div>
+              <img
+                src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/digitale-gedenkseite-1.png"
+                alt="Digitale Gedenkseite Builder"
+                className="w-full object-cover object-top"
+              />
+              <div className="card-glow" />
             </div>
 
+
             {/* Card 3 – In 10 Minuten fertig – grid-area: 4/1/5/2 */}
-            <div className="card-three card bg-white rounded-2xl border border-slate-100 overflow-hidden relative">
-              {/* top info row */}
-              <div className="flex items-start gap-3 p-5">
-                <img
-                  src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/hourglass-start-1.svg"
-                  alt=""
-                  className="w-10 h-10 shrink-0"
-                />
+            <div className="card-three">
+              <img
+                src="/images/startseite/form-ui.png"
+                alt=""
+                className="w-full card-three-image"
+              />
+
+              <div className="card-three-info">
+
                 <div>
                   <h3 className="font-heading font-semibold text-brand-navy text-base leading-tight mb-1">
                     In 10 Minuten fertig
@@ -124,14 +105,10 @@ export default function HeroSection() {
                   <p className="text-xs text-slate-500 font-light leading-relaxed">
                     Gedenkseite erstellen, Fotos hochladen und Seite freischalten
                   </p>
+
                 </div>
-              </div>
-              <div className="overflow-hidden">
-                <img
-                  src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/5f923dd8ca9842e694d4dee0_Form-1-1-1024x641.png"
-                  alt="Formular"
-                  className="w-full object-cover"
-                />
+
+
               </div>
             </div>
 
@@ -179,10 +156,11 @@ export default function HeroSection() {
         </div>
 
         {/* ── Global styles for grid + hero overlay ── */}
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
         /* Background image with white gradient overlay */
         .hero-image {
-          background-image: url('https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/Ueberschrift-1.png');
+          background-image: url('/images/startseite/two-brown-trees.jpg');
           background-size: cover;
           background-position: center top;
         }
@@ -199,7 +177,7 @@ export default function HeroSection() {
         }
 
         /* Grid layout — mirrors your Elementor CSS exactly */
-        .home-hero-grid {
+        .bento-grid {
           display: grid;
           grid-column-gap: 30px;
           grid-row-gap: 30px;
