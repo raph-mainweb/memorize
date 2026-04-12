@@ -13,14 +13,14 @@ export default function HeroSection() {
 
         {/* ── Hero Text Content ── */}
         <div className="relative z-20 flex flex-col items-center text-center px-4 pt-20 pb-6 max-w-3xl mx-auto">
-          <p className="font-script text-brand-primary text-2xl md:text-3xl mb-4 tracking-wide">
+          <p className="subtitle">
             Die moderne Art des Gedenkens
           </p>
-          <h1 className="font-heading text-brand-navy text-5xl md:text-7xl leading-[1.1] tracking-tight mb-6">
+          <h1 className="font-heading font-medium text-brand-navy tracking-tight mb-4">
             Erinnerungen, die{' '}
             <span className="text-brand-primary">niemals verblassen.</span>
           </h1>
-          <p className="text-slate-500 text-lg md:text-xl font-light leading-relaxed max-w-xl mb-8">
+          <p className="text-slate-500 text-lg md:text-xl font-light leading-relaxed mb-8">
             Erstelle eine digitale Gedenkseite für einen geliebten Menschen —
             verbunden mit einem eleganten QR-Medaillon am Grabstein. Kostenlos
             starten, für immer online.
@@ -28,13 +28,13 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/dashboard/neu"
-              className="bg-brand-primary text-white font-medium px-7 py-3.5 rounded-full shadow-md hover:brightness-105 hover:-translate-y-0.5 transition"
+              className="btn btn-primary"
             >
               Gedenkseite erstellen
             </Link>
             <Link
               href="#medaillon"
-              className="bg-[#F5F3FA] text-brand-primary font-medium px-7 py-3.5 rounded-full hover:bg-[#EBE7F5] transition"
+              className="btn btn-secondary"
             >
               Medallion Shop
             </Link>
@@ -48,7 +48,7 @@ export default function HeroSection() {
             {/* Phone – grid-area: 1/2/5/3 */}
             <div className="phone-holder flex justify-center">
               <img
-                src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/Ueberschrift-1.png"
+                src="/images/startseite/phone-mockup.png"
                 alt="Gedenkseite auf dem Smartphone"
                 className="object-contain drop-shadow-2xl"
               />
@@ -57,13 +57,13 @@ export default function HeroSection() {
             {/* Card 1 – QR Medaillon */}
             <div className="bentocard card-one">
               <img
-                src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/memorial-card.png"
+                src="/images/startseite/memorial-card.png"
                 alt="QR Medaillon"
                 className="w-full rounded-xl object-cover"
               />
               <div className="bentocard-content text-center">
-                <h3 className="font-heading font-semibold text-brand-navy text-lg">QR-Medaillon</h3>
-                <p className="text-sm text-slate-500 font-light leading-relaxed">
+                <h3 className="font-heading font-medium text-brand-navy text-2xl mb-2">QR-Medaillon</h3>
+                <p className="text-small text-slate-500 font-light leading-relaxed">
                   Wetterfest und hochwertig — direkt am Grabstein, der Urne oder einem Gedenktafel anbringen.
                 </p>
               </div>
@@ -74,17 +74,17 @@ export default function HeroSection() {
             {/* Card 2 – Dashboard */}
             <div className="bentocard card-two">
               <div className="bentocard-content text-center">
-                <h3 className="font-heading font-semibold text-brand-navy text-lg">Digitale Gedenkseite</h3>
-                <p className="text-sm text-slate-500 font-light leading-relaxed">
+                <h3 className="font-heading font-medium text-brand-navy text-2xl mb-2">Digitale Gedenkseite</h3>
+                <p className="text-small text-slate-500 font-light leading-relaxed">
                   Fotos, Lebensgeschichte, Geburts- und Sterbedatum, Grabadresse und persönliche Erinnerungen — an einem würdevollen Ort online.
                 </p>
               </div>
               <img
-                src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/digitale-gedenkseite-1.png"
+                src="/images/startseite/builder-macbook.png"
                 alt="Digitale Gedenkseite Builder"
                 className="w-full object-cover object-top"
               />
-              <div className="card-glow" />
+              <div className="card-glow"></div>
             </div>
 
 
@@ -97,12 +97,16 @@ export default function HeroSection() {
               />
 
               <div className="card-three-info">
+                <img
+                  src="/images/startseite/hourglass.svg"
+                  alt="Hourglass" width="30px" height="30px"
+                />
 
                 <div>
-                  <h3 className="font-heading font-semibold text-brand-navy text-base leading-tight mb-1">
+                  <h3 className="font-heading font-semibold text-white text-base leading-tight mb-1">
                     In 10 Minuten fertig
                   </h3>
-                  <p className="text-xs text-slate-500 font-light leading-relaxed">
+                  <p className="text-xs text-white font-light leading-relaxed">
                     Gedenkseite erstellen, Fotos hochladen und Seite freischalten
                   </p>
 
@@ -114,103 +118,273 @@ export default function HeroSection() {
 
             {/* Card 4 – Gravestone background – grid-area: 5/1/6/3 */}
             <div
-              className="card-four rounded-2xl overflow-hidden relative min-h-[200px] flex items-end"
-              style={{
-                backgroundImage: "url('https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/memorial-card.png')",
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
+              className="card-four"
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05123a] via-[#05123a]/60 to-transparent" />
-              <div className="relative z-10 p-6">
-                <h3 className="text-white font-heading font-medium text-xl mb-1 leading-tight">
+              <div className="card-four-content">
+                <h3 className="text-white font-heading font-medium text-3xl mb-1 leading-tight">
                   Ein würdevoller Ort der Erinnerung
                 </h3>
-                <p className="text-white/70 text-sm font-light">
+                <p className="text-white/70 text-base  font-light">
                   Damit die, die nicht da sein können, trotzdem teilhaben.
                 </p>
               </div>
             </div>
 
+
             {/* Card 5 – Für immer zugänglich – grid-area: 5/3/6/4 */}
-            <div className="card-five card bg-white rounded-2xl border border-slate-100 overflow-hidden relative flex flex-col">
-              <div className="card-glow-2 absolute top-[-60px] left-[-60px] w-[280px] h-[280px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(5,32,74,0.18) 0%, transparent 65%)' }}
-              />
-              <div className="overflow-hidden">
-                <img
-                  src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/Generated-Image-April-11-2026-5_21PM-1.jpg"
-                  alt="QR Code scannen"
-                  className="w-full object-cover"
-                />
-              </div>
-              <div className="p-5 flex flex-col gap-1">
-                <h3 className="font-heading font-semibold text-brand-navy text-base">Für immer zugänglich</h3>
-                <p className="text-sm text-slate-500 font-light leading-relaxed">
+            <div className="card-five bentocard">
+              <img
+                src="https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/Generated-Image-April-11-2026-5_21PM-1.jpg"
+                alt="QR Code scannen"
+                className="w-full object-cover" />
+              <div className="bentocard-content text-center">
+                <h3 className="font-heading font-medium text-brand-navy text-2xl mb-2">Für immer zugänglich</h3>
+                <p className="text-small text-slate-500 font-light leading-relaxed">
                   Besucher scannen den QR-Code mit dem Handy — keine App, kein Login nötig. Die Gedenkseite öffnet sich sofort.
                 </p>
               </div>
+              <div className="card-glow-2"></div>
             </div>
 
           </div>
         </div>
 
         {/* ── Global styles for grid + hero overlay ── */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-        /* Background image with white gradient overlay */
-        .hero-image {
-          background-image: url('/images/startseite/two-brown-trees.jpg');
-          background-size: cover;
-          background-position: center top;
-        }
-        .hero-gradient::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            0deg,
-            rgba(247, 245, 242, 1) 0%,
-            rgba(247, 245, 242, 0.92) 50%,
-            rgba(247, 245, 242, 1) 100%
-          );
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+      .hero-image {
+        background-image: url('/images/startseite/two-brown-trees.jpg');
+        background-size: cover;
+        background-position: center top;
+      }
+
+      .hero-gradient::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(0deg, rgb(255 255 255) 0%, rgb(255 255 255 / 93%) 50%, rgb(255 255 255) 100%)
+        ;
+      }
+
+      /* Mobile first */
+      .bento-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        position: relative;
+      }
+
+      .bentocard {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        overflow: hidden;
+      }
+
+      .bentocard-content {
+        padding: 20px;
+      }
+
+      .text-small {
+        font-size: 16px;
+        line-height: 1.4em;
+      }
+
+      .phone-holder,
+      .card-one,
+      .card-two,
+      .card-three,
+      .card-four,
+      .card-five {
+        grid-area: auto;
+        margin-top: 0;
+        align-self: stretch;
+      }
+
+      .phone-holder {
+        order: 1;
+      }
+
+      .card-one {
+        order: 2;
+      }
+
+      .card-two {
+        order: 3;
+      }
+
+      .card-three {
+        order: 4;
+        padding: 0;
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+      }
+
+      img.w-full.card-three-image {
+        border-radius: 15px;
+        box-shadow: -5px -3px 15px 1px rgb(0 0 0 / 2%);
+      }
+
+      .card-three-info {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        top: auto;
+        background: #968cb5d9;
+        z-index: 1;
+        padding: 12px;
+        border-radius: 8px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        width: auto;
+      }
+
+      .card-four {
+        order: 5;
+        min-height: 260px;
+        background-image: url('/images/startseite/Banner-4-Stones.webp');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        border-radius: 15px;
+        overflow: hidden;
+      }
+
+      .card-four:before {
+        background-image: linear-gradient(180deg, #02010100 44%, #222222 100%);
+        content: "";
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        inset: 0;
+      }
+
+      .card-four-content {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding: 20px;
+      }
+
+      .card-five {
+        order: 6;
+      }
+
+      .phone-holder img {
+        width: 100%;
+        max-width: 340px;
+        height: auto;
+      }
+
+      .card-one img,
+      .card-two img,
+      .card-five img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      /* Tablet */
+      @media (min-width: 768px) {
+        .bento-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
         }
 
-        /* Grid layout — mirrors your Elementor CSS exactly */
+        .phone-holder {
+          grid-column: span 2;
+          display: flex;
+          justify-content: center;
+        }
+
+        .phone-holder img {
+          max-width: 420px;
+        }
+
+        .card-four {
+          min-height: 320px;
+        }
+
+        .card-four-content {
+          padding: 24px;
+        }
+      }
+
+      /* Desktop */
+      @media (min-width: 1024px) {
         .bento-grid {
-          display: grid;
           grid-column-gap: 30px;
           grid-row-gap: 30px;
           grid-template-rows: 0 0 auto auto auto;
           grid-template-columns: 1fr 1fr 1fr;
           grid-auto-rows: 1fr;
-          position: relative;
         }
+
         .phone-holder {
           grid-area: 1 / 2 / 5 / 3;
           align-self: end;
         }
+
         .card-one {
           grid-area: 3 / 1 / 4 / 2;
           align-self: center;
         }
+
         .card-two {
           grid-area: 3 / 3 / 5 / 4;
           align-self: center;
         }
+
         .card-three {
           grid-area: 4 / 1 / 5 / 2;
           align-self: center;
+          padding: 20px 0 0 30px;
+          position: relative;
+          border-radius: 0;
+          overflow: visible;
         }
+
+        img.w-full.card-three-image {
+          border-radius: 10px 0 0 10px;
+        }
+
+        .card-three-info {
+          position: absolute;
+          top: 50px;
+          left: 0;
+          right: auto;
+          bottom: auto;
+          width: 90%;
+        }
+
         .card-four {
           grid-area: 5 / 1 / 6 / 3;
           align-self: center;
+          padding-bottom: 52%;
+          min-height: auto;
         }
+
+        .card-four-content {
+          padding: 30px;
+        }
+
         .card-five {
           grid-area: 5 / 3 / 6 / 4;
           align-self: center;
+          margin-top: -140px;
         }
-      ` }} />
+
+        .phone-holder img {
+          max-width: 100%;
+        }
+      }
+    `,
+          }}
+        />
       </section>
 
       {/* How it works */}

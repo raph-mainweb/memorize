@@ -3,11 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+
   /* CSS variable defaults — overridden by layout.tsx via DB values */
   :root {
-    --brand-primary:   #968cb5;
+    --brand-primary: #968cb5;
     --brand-secondary: #eae6f4;
-    --brand-navy:      #1e2b5e;
+    --brand-navy: #1e2b5e;
   }
 
   body {
@@ -15,54 +16,81 @@
   }
 
   /* Headings: Inter Tight */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading text-slate-900;
   }
 }
 
+h1 {
+  font-size: 4.6rem;
+  line-height: 1.1em;
+}
+
+@media (max-width:1280px) {
+  h1 {
+    font-size: 3.8rem;
+  }
+}
+
+@media (max-width:767px) {
+  h1 {
+    font-size: 3.0rem;
+  }
+}
+
+@media (max-width:480px) {
+  h1 {
+    font-size: 2.7rem;
+  }
+}
+
 @layer components {
-  /* Glassmorphism utility */
+
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-brand-100/60 shadow-sm;
   }
 
-  /* Decorative subtitle above H1 — Dancing Script */
   .subtitle {
     font-family: var(--font-dancing-script), cursive;
-    color: var(--brand-primary);
-    @apply text-xl md:text-2xl;
+    color: var(--brand-navy);
+    @apply text-xl md:text-3xl;
   }
 
-  /* Primary Button — custom primary color from settings */
   .btn-primary {
     font-family: var(--font-inter-tight), sans-serif;
     background-color: var(--brand-primary);
     color: white;
-    @apply font-medium px-6 py-3 rounded-full transition shadow-sm hover:shadow-md
-           focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply font-medium px-6 py-3 rounded-full transition shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
+
   .btn-primary:hover {
     filter: brightness(0.92);
   }
 
-  /* Secondary Button — custom secondary color from settings */
   .btn-secondary {
     font-family: var(--font-inter-tight), sans-serif;
     background-color: var(--brand-secondary);
     border: 1px solid color-mix(in srgb, var(--brand-secondary) 80%, #00000020);
-    @apply font-medium px-6 py-3 rounded-full transition
-           focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply font-medium px-6 py-3 rounded-full transition focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
+
   .btn-secondary:hover {
     filter: brightness(0.95);
   }
 
-  /* Ghost / outline button — uses primary color */
   .btn-ghost {
     font-family: var(--font-inter-tight), sans-serif;
     border: 1px solid var(--brand-primary);
     color: var(--brand-primary);
-    @apply font-medium px-6 py-3 rounded-full transition
-           hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply font-medium px-6 py-3 rounded-full transition hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  span.text-brand-primary {
+    color: var(--brand-primary);
   }
 }
