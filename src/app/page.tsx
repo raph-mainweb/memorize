@@ -111,86 +111,50 @@ export default function LandingPage() {
 
           {/* Right Column */}
           <div className="w-full lg:w-[32%] flex flex-col gap-6 lg:gap-8 lg:mt-16">
-
+            
             {/* Top Right: Digitale Gedenkseite Card */}
             <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all border border-slate-100/50 relative overflow-hidden h-[340px]">
               <h3 className="font-heading font-semibold text-brand-navy text-xl mb-3 relative z-10 text-center">Digitale Gedenkseite</h3>
               <p className="text-sm text-slate-500 mb-6 text-center relative z-10 font-sans font-light leading-relaxed">
                 Fotos, Lebensgeschichte, Geburts- und Sterbedatum, Grabadresse und persönliche Erinnerungen — an einem würdevollen Ort online.
               </p>
-
+              
               {/* Macbook / Builder mockup */}
-              <div className="absolute bottom-[-10px] left-0 right-0 h-[200px] flex justify-center flex-col items-center">
-                <div className="relative w-[110%] h-[200px] translate-x-[5%] rotate-[-12deg]">
-                  <Image
-                    src="/images/startseite/builder-macbook.png"
-                    alt="Builder Interface"
-                    fill
-                    className="object-contain object-bottom drop-shadow-2xl opacity-90"
-                  />
-                </div>
+              <div className="absolute bottom-[-10px] left-0 right-0 h-[220px] flex justify-center flex-col items-center">
+                 <div className="relative w-[120%] h-[240px] translate-x-[5%] rotate-[-12deg] group-hover:rotate-[-8deg] transition-transform duration-500">
+                   <Image 
+                     src="/images/startseite/builder-macbook.png" 
+                     alt="Builder Interface" 
+                     fill 
+                     className="object-contain object-bottom drop-shadow-2xl opacity-90" 
+                   />
+                 </div>
               </div>
             </div>
 
             {/* Bottom Right: Scanning Phone */}
-            <div className="bg-white rounded-[32px] shadow-sm hover:shadow-md transition-shadow border border-slate-100 flex flex-col h-[260px] overflow-hidden">
-              <div className="relative h-[140px] w-full bg-stone-100 flex-shrink-0 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-80" style={{ backgroundImage: "linear-gradient(#eae6f4 1px, transparent 1px), linear-gradient(90deg, #eae6f4 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-                <Image
-                  src="/images/startseite/scan-mockup.png"
-                  alt="QR Code Scan"
-                  fill
-                  className="object-contain p-4 mix-blend-multiply"
+            <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all border border-slate-100/50 flex flex-col h-[250px] overflow-hidden">
+              <div className="relative h-[130px] w-full bg-stone-50 flex-shrink-0 flex items-center justify-center">
+                <div className="absolute inset-0 opacity-[0.8]" style={{ backgroundImage: "linear-gradient(var(--brand-secondary) 1px, transparent 1px), linear-gradient(90deg, var(--brand-secondary) 1px, transparent 1px)", backgroundSize: "20px 20px"}}></div>
+                <Image 
+                  src="/images/startseite/scan-mockup.png" 
+                  alt="QR Code Scan" 
+                  fill 
+                  className="object-contain p-2 mix-blend-multiply" 
                 />
               </div>
-              <div className="px-6 py-5 text-center flex-grow flex flex-col justify-center">
-                <h3 className="font-semibold text-brand-navy text-base mb-1">Für immer zugänglich</h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-light">Besucher scannen den QR-Code mit dem Handy — keine App, kein Login nötig. Die Gedenkseite öffnet sich sofort.</p>
+              <div className="px-8 py-5 text-center flex-grow flex flex-col justify-center">
+                <h3 className="font-heading font-semibold text-brand-navy text-lg mb-2">Für immer zugänglich</h3>
+                <p className="text-sm text-slate-500 font-sans font-light leading-relaxed">Besucher scannen den QR-Code mit dem Handy — keine App, kein Login nötig. Die Seite öffnet sich sofort.</p>
               </div>
             </div>
 
           </div>
-
-          nd persönliche Erinnerungen — an einem würdevollen Ort online.
-        </p>
-
-        {/* Macbook / Builder mockup */}
-        <div className="absolute bottom-[-10px] left-0 right-0 h-[200px] flex justify-center flex-col items-center">
-          <div className="relative w-[110%] h-[200px] translate-x-[5%] rotate-[-12deg]">
-            <Image
-              src="/images/startseite/builder-macbook.png"
-              alt="Builder Interface"
-              fill
-              className="object-contain object-bottom drop-shadow-2xl opacity-90"
-            />
-          </div>
         </div>
-    </div>
+      </section>
 
-            {/* Bottom Right: Scanning Phone */}
-  <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all border border-slate-100/50 flex flex-col h-[260px] overflow-hidden">
-    <div className="relative h-[140px] w-full bg-stone-100 flex-shrink-0 flex items-center justify-center">
-      <div className="absolute inset-0 opacity-[0.8]" style={{ backgroundImage: "linear-gradient(var(--brand-secondary) 1px, transparent 1px), linear-gradient(90deg, var(--brand-secondary) 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-      <Image
-        src="/images/startseite/scan-mockup.png"
-        alt="QR Code Scan"
-        fill
-        className="object-contain p-2 mix-blend-multiply"
-      />
-    </div>
-    <div className="px-8 py-5 text-center flex-grow flex flex-col justify-center">
-      <h3 className="font-heading font-semibold text-brand-navy text-lg mb-2">Für immer zugänglich</h3>
-      <p className="text-sm text-slate-500 font-sans font-light leading-relaxed">Besucher scannen den QR-Code mit dem Handy — keine App, kein Login nötig. Die Seite öffnet sich sofort.</p>
-    </div>
-  </div>
-
-          </div >
-
-        </div >
-      </section >
-
-    {/* How it works */ }
-    < section className = "w-full bg-stone-50 py-24 md:py-32 relative" >
+      {/* How it works */}
+      <section className="w-full bg-stone-50 py-24 md:py-32 relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-20 md:mb-28">
           <h2 className="text-4xl md:text-5xl font-serif text-slate-900 mb-6 tracking-tight">Der Weg zur Gedenkseite</h2>
