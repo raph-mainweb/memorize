@@ -21,9 +21,13 @@ export async function POST(req: NextRequest) {
       navy:      navy      || '#1e2b5e',
     };
 
-    const { error } = await supabase
+    const { error: dbError } = await supabase
       .from('system_settings')
       .upsert({ key: 'brand_colors', value: valuePayload }, { onConflict: 'key' });
+
+    if (dbError) {
+      console.error('[brand-colors] DB error:', dbError);
+    }
 
     // INVALIDATE CACHE across the entire application layout
     revalidatePath('/', 'layout');
