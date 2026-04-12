@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  /* CSS variable defaults — overridden by layout.tsx via DB values */
+  :root {
+    --brand-primary:   #968cb5;
+    --brand-secondary: #eae6f4;
+    --brand-navy:      #1e2b5e;
+  }
+
   body {
     @apply bg-stone-50 text-slate-800 font-sans antialiased;
   }
@@ -21,27 +28,41 @@
 
   /* Decorative subtitle above H1 — Dancing Script */
   .subtitle {
-    @apply font-script text-brand-500 text-xl md:text-2xl;
+    font-family: var(--font-dancing-script), cursive;
+    color: var(--brand-primary);
+    @apply text-xl md:text-2xl;
   }
 
-  /* Primary Button — Lavendel bg */
+  /* Primary Button — custom primary color from settings */
   .btn-primary {
-    @apply bg-brand-500 text-white font-heading font-medium px-6 py-3 rounded-full
-           hover:bg-brand-600 transition shadow-sm hover:shadow-md
-           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2;
+    font-family: var(--font-inter-tight), sans-serif;
+    background-color: var(--brand-primary);
+    color: white;
+    @apply font-medium px-6 py-3 rounded-full transition shadow-sm hover:shadow-md
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.92);
   }
 
-  /* Secondary Button — light Lavendel bg */
+  /* Secondary Button — custom secondary color from settings */
   .btn-secondary {
-    @apply bg-brand-100 text-brand-700 font-heading font-medium px-6 py-3 rounded-full
-           hover:bg-brand-200 transition border border-brand-200
-           focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-2;
+    font-family: var(--font-inter-tight), sans-serif;
+    background-color: var(--brand-secondary);
+    border: 1px solid color-mix(in srgb, var(--brand-secondary) 80%, #00000020);
+    @apply font-medium px-6 py-3 rounded-full transition
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  .btn-secondary:hover {
+    filter: brightness(0.95);
   }
 
-  /* Ghost / outline button */
+  /* Ghost / outline button — uses primary color */
   .btn-ghost {
-    @apply border border-brand-300 text-brand-600 font-heading font-medium px-6 py-3 rounded-full
-           hover:bg-brand-50 transition
-           focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-2;
+    font-family: var(--font-inter-tight), sans-serif;
+    border: 1px solid var(--brand-primary);
+    color: var(--brand-primary);
+    @apply font-medium px-6 py-3 rounded-full transition
+           hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 }
