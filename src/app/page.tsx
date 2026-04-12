@@ -1,6 +1,30 @@
 import Link from 'next/link';
 import { Heart, ChevronRight, PenLine, Lock, Wifi, CheckCircle2 } from 'lucide-react';
 
+const products = [
+  {
+    badge: 'Klassiker',
+    title: 'Edelstahl Medaillon',
+    desc: 'Das klassische, witterungsbeständige QR-Medaillon aus gebürstetem Edelstahl. Die puristische Brücke zur Gedenkseite.',
+    price: '49',
+    img: '/images/startseite/memorial-card.png',
+  },
+  {
+    badge: 'Premium',
+    title: 'Schwarz Matt Edition',
+    desc: 'Ein modernes, dezentes Medaillon in edlem Schwarz-Matt. Fügt sich perfekt in minimalistische Grabsteine ein.',
+    price: '59',
+    img: '/images/startseite/memorial-card.png',
+  },
+  {
+    badge: 'Exklusiv',
+    title: 'Gold Edition',
+    desc: 'Die exklusive Ausführung mit einer dezenten Vergoldung für einen besonders warmen, hochwertigen Glanz.',
+    price: '69',
+    img: '/images/startseite/memorial-card.png',
+  }
+];
+
 export default function HeroSection() {
   return (
     <div className="flex-grow flex flex-col items-center bg-white overflow-hidden">
@@ -180,48 +204,48 @@ export default function HeroSection() {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto bg-white rounded-[32px] border border-slate-200 shadow-xl shadow-brand-900/5 overflow-hidden flex flex-col md:flex-row">
-            
-            <div className="w-full md:w-1/2 bg-stone-100 flex items-center justify-center p-12 relative overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-tr from-brand-secondary/40 to-brand-primary/10"></div>
-               <img src="/images/startseite/memorial-card.png" alt="Medaillon" className="relative z-10 w-full max-w-xs drop-shadow-2xl rounded-2xl" />
-            </div>
-
-            <div className="w-full md:w-1/2 p-10 md:p-14 flex flex-col justify-center">
-              <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-6 border border-brand-100/50">
-                Premium Edition
-              </div>
-              <h3 className="text-3xl font-heading font-medium text-brand-navy mb-4">Erinnerungs-Paket</h3>
-              <p className="text-slate-500 font-light leading-relaxed mb-8">
-                Beinhaltet die dauerhafte Freischaltung der Gedenkseite ohne Folgekosten sowie das versandkostenfreie Marken-Medaillon.
-              </p>
-
-              <ul className="space-y-4 mb-10">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                  <span className="text-slate-600 font-light">Lebenslange Freischaltung (keine Abos)</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                  <span className="text-slate-600 font-light">Hochwertiges, wetterfestes QR-Medaillon</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                  <span className="text-slate-600 font-light">Extrastarkes 3M™-Klebepad inklusive</span>
-                </li>
-              </ul>
-
-              <div className="flex items-end justify-between border-t border-slate-100 pt-8 mt-auto">
-                <div>
-                  <div className="text-sm text-slate-400 font-light mb-1">Einmaliger Preis</div>
-                  <div className="text-4xl font-heading font-bold text-slate-900 leading-none tracking-tight">CHF 49<span className="text-xl text-slate-400 font-medium">.–</span></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {products.map((product, i) => (
+              <div key={i} className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-brand-900/5 overflow-hidden flex flex-col group hover:-translate-y-1 transition-all duration-300">
+                
+                <div className="w-full bg-stone-100 flex items-center justify-center p-10 relative overflow-hidden h-64">
+                   <div className="absolute inset-0 bg-gradient-to-tr from-brand-secondary/40 to-brand-primary/10 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+                   <img src={product.img} alt={product.title} className="relative z-10 w-full max-w-[160px] drop-shadow-xl rounded-2xl group-hover:scale-105 transition-transform duration-500" />
                 </div>
-                <Link href="/dashboard/neu" className="btn btn-primary transition-transform hover:scale-105 shadow-md hover:shadow-xl">
-                  Jetzt bestellen
-                </Link>
-              </div>
-            </div>
 
+                <div className="p-8 flex flex-col flex-grow">
+                  <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4 border border-brand-100/50">
+                    {product.badge}
+                  </div>
+                  <h3 className="text-2xl font-heading font-medium text-brand-navy mb-3">{product.title}</h3>
+                  <p className="text-slate-500 font-light text-sm leading-relaxed mb-6 flex-grow">
+                    {product.desc}
+                  </p>
+
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
+                      <span className="text-slate-600 font-light text-sm">Lebenslange Freischaltung inkl.</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
+                      <span className="text-slate-600 font-light text-sm">Wetterfestes Material</span>
+                    </li>
+                  </ul>
+
+                  <div className="border-t border-slate-100 pt-6 mt-auto flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-slate-400 font-light mb-0.5">Einmalig</div>
+                      <div className="text-2xl font-heading font-bold text-slate-900 leading-none tracking-tight">CHF {product.price}<span className="text-sm text-slate-400 font-medium">.–</span></div>
+                    </div>
+                    <Link href="/dashboard/neu" className="btn btn-primary btn-small transition-transform hover:scale-105 shadow-md">
+                      Bestellen
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
+            ))}
           </div>
 
         </div>
