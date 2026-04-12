@@ -52,16 +52,14 @@ export async function POST(req: NextRequest) {
     // Cache-bust: append timestamp
     const urlWithBust = `${publicUrl}?v=${Date.now()}`;
 
-    // Update system_settings
+    // Update system_settings via UPSERT to guarantee it saves
     const valuePayload = { url: urlWithBust, text: 'Nachklang' };
     const { error: dbError } = await supabase
       .from('system_settings')
-      .update({ value: valuePayload })
-      .eq('key', 'brand_logo');
+      .upsert({ key: 'brand_logo', value: valuePayload }, { onConflict: 'key' });
 
     if (dbError) {
-      // Try insert if update found nothing
-      await supabase.from('system_settings').insert({ key: 'brand_logo', value: valuePayload });
+      console.error('[logo-upload] DB error:', dbError);
     }
 
     // INVALIDATE CACHE across the entire application layout

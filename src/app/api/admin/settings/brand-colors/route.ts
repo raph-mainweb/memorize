@@ -23,12 +23,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await supabase
       .from('system_settings')
-      .update({ value: valuePayload })
-      .eq('key', 'brand_colors');
-
-    if (error) {
-      await supabase.from('system_settings').insert({ key: 'brand_colors', value: valuePayload });
-    }
+      .upsert({ key: 'brand_colors', value: valuePayload }, { onConflict: 'key' });
 
     // INVALIDATE CACHE across the entire application layout
     revalidatePath('/', 'layout');

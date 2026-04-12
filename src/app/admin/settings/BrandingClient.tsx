@@ -198,7 +198,7 @@ export default function BrandingClient({ initialLogoUrl, initialColors }: Brandi
             className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-xl text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            {isUploading ? 'Wird hochgeladen…' : 'Logo hochladen'}
+            {isUploading ? 'Wird gespeichert…' : 'Logo speichern'}
           </button>
         </div>
       </div>
