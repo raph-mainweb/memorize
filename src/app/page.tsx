@@ -4,7 +4,8 @@ import { ChevronRight, Heart, QrCode, Sparkles, Image as ImageIcon, Shield, Book
 export default function LandingPage() {
   return (
     <div className="flex-grow flex flex-col items-center bg-stone-50 overflow-hidden">
-      
+
+
 
       {/* Hero Section */}
       <section className="relative w-full px-6 lg:px-8 pt-40 pb-20 md:pt-48 md:pb-28 flex flex-col items-center text-center">
@@ -17,20 +18,20 @@ export default function LandingPage() {
             <Sparkles className="w-4 h-4" />
             <span className="uppercase text-xs tracking-widest">Die moderne Art des Gedenkens</span>
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-slate-900 mb-8 leading-[1.1] tracking-tight">
             Erinnerungen, die <br className="hidden md:block" />
             <span className="italic text-sage-600">niemals verblassen.</span>
           </h1>
-          
+
           <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-            Schaffe einen würdevollen, digitalen Ort für die Erinnerung an deine Liebsten. 
+            Schaffe einen würdevollen, digitalen Ort für die Erinnerung an deine Liebsten.
             Direkt am Grab zugänglich durch unser wetterfestes QR-Medaillon.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full md:w-auto animate-slide-up opacity-0" style={{ animationFillMode: 'forwards', animationDelay: '0.2s' }}>
             <Link href="/dashboard/neu" className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-slate-900/10 hover:shadow-2xl hover:shadow-slate-900/20 hover:-translate-y-1">
-               Kostenlos beginnen
+              Kostenlos beginnen
               <ChevronRight className="w-5 h-5 opacity-80" />
             </Link>
             <Link href="#medaillon" className="w-full sm:w-auto bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-800 px-8 py-4 rounded-full font-medium hover:bg-white transition-all flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-1">
@@ -45,18 +46,18 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-950"></div>
         <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full relative z-10">
           <div className="grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
-            
+
             {/* Image Placeholder */}
             <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-slate-800/50 flex items-center justify-center border border-slate-700 shadow-2xl backdrop-blur-sm group">
               <div className="absolute inset-0 bg-gradient-to-tr from-slate-800/80 to-slate-700/20 transition-opacity group-hover:opacity-80"></div>
-              
+
               {/* Product image placeholder */}
               <div className="relative z-10 flex flex-col items-center text-slate-400">
                 <ImageIcon className="w-20 h-20 mb-6 opacity-30 group-hover:opacity-60 transition-opacity group-hover:scale-110 duration-500" />
                 <span className="font-mono text-sm tracking-widest uppercase text-slate-300">Produktaufnahme Medaillon</span>
                 <span className="text-xs opacity-50 mt-3 text-center max-w-xs px-4">Hier steht das hochwertige Produktbild oder das interaktive 3D-Modell im Fokus.</span>
               </div>
-              
+
               {/* Decorative lighting elements */}
               <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-sage-500/20 shadow-[0_0_80px_rgba(138,148,136,0.3)] blur-2xl"></div>
               <div className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full bg-white/10 blur-3xl"></div>
@@ -74,7 +75,7 @@ export default function LandingPage() {
               <p className="text-slate-300 text-lg md:text-xl mb-10 leading-relaxed font-light">
                 Unser QR-Medaillon wird aus hochwertigem, wetterfestem Material gefertigt und fügt sich dezent in jede Grabgestaltung ein. Ein einfacher Scan mit dem Smartphone öffnet die dazugehörige Gedenkseite.
               </p>
-              
+
               <ul className="space-y-8">
                 <li className="flex items-start gap-5">
                   <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center flex-shrink-0 shadow-inner">
@@ -150,15 +151,15 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-      
+
       {/* Testimonial / Closing CTA */}
       <section className="w-full py-24 md:py-32 bg-white flex flex-col items-center text-center px-6 border-t border-slate-100 relative overflow-hidden">
         <div className="absolute top-[-50%] right-[-10%] w-[500px] h-[500px] rounded-full bg-sage-50/50 blur-[100px] -z-10" />
-        
+
         <div className="max-w-3xl">
           <Heart className="w-12 h-12 text-sage-300 mx-auto mb-10" />
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-slate-900 mb-8 leading-tight tracking-tight">
-            Beginne jetzt, <br/><span className="italic">ohne Verpflichtungen.</span>
+            Beginne jetzt, <br /><span className="italic">ohne Verpflichtungen.</span>
           </h2>
           <p className="text-slate-500 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed">
             Die Erstellung und Gestaltung der Gedenkseite ist komplett kostenlos. Nimm dir die Zeit, die du brauchst, und bezahle erst, wenn du bereit bist, die Seite zu veröffentlichen.
@@ -199,12 +200,12 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          
+
           <div className="flex flex-col md:flex-row items-center justify-between text-slate-400 text-sm pt-8 border-t border-stone-200">
             <div>© {new Date().getFullYear()} Nachklang CH. Alle Rechte vorbehalten.</div>
             <div className="flex items-center gap-2 mt-4 md:mt-0">
-               <span className="text-slate-400">Design & Entwicklung in der Schweiz</span>
-               <span>🇨🇭</span>
+              <span className="text-slate-400">Design & Entwicklung in der Schweiz</span>
+              <span>🇨🇭</span>
             </div>
           </div>
         </div>
