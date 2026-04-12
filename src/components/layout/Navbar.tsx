@@ -167,6 +167,8 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
             <Link href="/wie-es-funktioniert" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700 hover:text-brand-600">Wie funktionierts</Link>
             <Link href="/medaillons" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700 hover:text-brand-600">Medaillons</Link>
             <Link href="/ueber-uns" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700 hover:text-brand-600">Über uns</Link>
+            <Link href="/partner" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700 hover:text-brand-600">Für Partner</Link>
+            <Link href="/faq" onClick={() => setIsMobileOpen(false)} className="text-base font-medium text-slate-700 hover:text-brand-600">FAQ</Link>
           </div>
 
           <div className="pt-6 flex flex-col gap-4">
