@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -62,6 +63,9 @@ export async function POST(req: NextRequest) {
       // Try insert if update found nothing
       await supabase.from('system_settings').insert({ key: 'brand_logo', value: valuePayload });
     }
+
+    // INVALIDATE CACHE across the entire application layout
+    revalidatePath('/', 'layout');
 
     return NextResponse.json({ url: urlWithBust });
   } catch (err) {

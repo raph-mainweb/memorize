@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,6 +29,9 @@ export async function POST(req: NextRequest) {
     if (error) {
       await supabase.from('system_settings').insert({ key: 'brand_colors', value: valuePayload });
     }
+
+    // INVALIDATE CACHE across the entire application layout
+    revalidatePath('/', 'layout');
 
     return NextResponse.json({ ok: true, colors: valuePayload });
   } catch (err) {
