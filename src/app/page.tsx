@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Heart, BookOpen, Clock, ChevronRight } from 'lucide-react';
 
 export default function HeroSection() {
   return (
@@ -179,7 +180,7 @@ export default function HeroSection() {
         </div>
 
         {/* ── Global styles for grid + hero overlay ── */}
-        <style jsx>{`
+        <style dangerouslySetInnerHTML={{ __html: `
         /* Background image with white gradient overlay */
         .hero-image {
           background-image: url('https://memorial.mainwebsite.ch/wp-content/uploads/2026/04/Ueberschrift-1.png');
@@ -232,7 +233,7 @@ export default function HeroSection() {
           grid-area: 5 / 3 / 6 / 4;
           align-self: center;
         }
-      `}</style>
+      ` }} />
       </section>
 
       {/* How it works */}
