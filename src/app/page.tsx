@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, BookOpen, Clock, ChevronRight } from 'lucide-react';
 
