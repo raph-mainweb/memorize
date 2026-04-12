@@ -53,14 +53,14 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || 'NA';
 
   const LogoArea = () => (
-    <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+    <Link href="/" className="nav-logo flex items-center gap-2.5 group shrink-0">
       {logoUrl ? (
         <Image
           src={logoUrl}
           alt={logoText || 'Nachklang'}
-          width={160}
-          height={40}
-          className="h-9 w-auto object-contain"
+          width={200}
+          height={60}
+          className="w-auto object-contain"
           priority
         />
       ) : (
@@ -73,7 +73,7 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
   );
 
   return (
-    <nav className="sticky top-0 z-50 w-full h-14 bg-white/95 backdrop-blur-sm border-b border-brand-100">
+    <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
 
         {/* Logo */}
@@ -102,12 +102,12 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
         <div className="hidden md:flex items-center gap-3">
           {!user ? (
             <>
-              <Link href="/auth/login" className="bg-brand-secondary/50 text-brand-navy hover:bg-brand-secondary text-sm font-medium py-2.5 px-6 rounded-full transition-colors">
+              <Link href="/auth/login" className="btn btn-secondary btn-small">
                 Anmelden
               </Link>
               <Link
                 href="/dashboard/neu"
-                className="btn-primary text-sm py-2.5 px-6 flex items-center gap-1.5"
+                className="btn btn-primary btn-small"
               >
                 Gedenkseite erstellen <span className="text-base font-light leading-none">+</span>
               </Link>
@@ -116,7 +116,7 @@ export default function Navbar({ logoUrl, logoText }: NavbarProps) {
             <div className="flex items-center gap-4">
               <Link
                 href="/dashboard/neu"
-                className="btn-primary text-sm py-2 px-5"
+                className="btn btn-primary btn-small"
               >
                 + Neue Seite
               </Link>
