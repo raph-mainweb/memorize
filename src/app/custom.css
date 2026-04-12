@@ -1,0 +1,16 @@
+/* ==============================================================
+   NACHKLANG CH - BEnutzerdefiniertes CSS
+   ==============================================================
+   Hier kannst du jederzeit deine eigenen CSS-Klassen und 
+   Styleschecks hinzufügen, ohne Tailwind zu verwenden.
+   
+   Alle Anweisungen, die du hier schreibst, überschreiben das 
+   Standard-Design (falls nötig mit !important).
+*/
+
+/* Beispiel: 
+.meine-eigene-klasse {
+  color: red !important;
+  background-color: blue;
+}
+*/

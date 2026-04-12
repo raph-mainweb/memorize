@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter_Tight, Montserrat, Dancing_Script } from 'next/font/google';
 import './globals.css';
+import './custom.css';
 import NavbarWrapper from '@/components/layout/NavbarWrapper';
 import { createAdminClient } from '@/utils/supabase/admin';
 
