@@ -4,16 +4,44 @@
 
 @layer base {
   body {
-    @apply bg-stone-50 text-slate-800 antialiased;
-  }
-  
-  /* Modern Glassmorphism utility */
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-sm;
+    @apply bg-stone-50 text-slate-800 font-sans antialiased;
   }
 
-  /* Structural Typography bindings */
-  h1, h2, h3, h4, h5 {
-    @apply font-serif text-slate-900;
+  /* Headings: Inter Tight */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-slate-900;
+  }
+}
+
+@layer components {
+  /* Glassmorphism utility */
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-brand-100/60 shadow-sm;
+  }
+
+  /* Decorative subtitle above H1 — Dancing Script */
+  .subtitle {
+    @apply font-script text-brand-500 text-xl md:text-2xl;
+  }
+
+  /* Primary Button — Lavendel bg */
+  .btn-primary {
+    @apply bg-brand-500 text-white font-heading font-medium px-6 py-3 rounded-full
+           hover:bg-brand-600 transition shadow-sm hover:shadow-md
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2;
+  }
+
+  /* Secondary Button — light Lavendel bg */
+  .btn-secondary {
+    @apply bg-brand-100 text-brand-700 font-heading font-medium px-6 py-3 rounded-full
+           hover:bg-brand-200 transition border border-brand-200
+           focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-2;
+  }
+
+  /* Ghost / outline button */
+  .btn-ghost {
+    @apply border border-brand-300 text-brand-600 font-heading font-medium px-6 py-3 rounded-full
+           hover:bg-brand-50 transition
+           focus:outline-none focus:ring-2 focus:ring-brand-300 focus:ring-offset-2;
   }
 }

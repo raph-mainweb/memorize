@@ -1,15 +1,26 @@
-'use client';
+import { createAdminClient } from '@/utils/supabase/admin';
+import Navbar from './Navbar';
 
-import { usePathname } from 'next/navigation';
-import Navbar from '@/components/layout/Navbar';
+// Server Component: fetches logo settings from DB, passes to client Navbar
+export default async function NavbarWrapper() {
+  let logoUrl: string | null = null;
+  let logoText: string | null = null;
 
-export default function NavbarWrapper() {
-  const pathname = usePathname();
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'brand_logo')
+      .maybeSingle();
 
-  // Do not render the public navbar in admin routes
-  if (pathname.startsWith('/admin')) {
-    return null;
+    if (data?.value) {
+      logoUrl  = data.value.url   || null;
+      logoText = data.value.text  || null;
+    }
+  } catch {
+    // Graceful fallback — show text logo if DB unreachable
   }
 
-  return <Navbar />;
+  return <Navbar logoUrl={logoUrl} logoText={logoText} />;
 }
