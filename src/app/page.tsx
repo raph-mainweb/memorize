@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { Heart, ChevronRight, PenLine, Lock, Wifi, CheckCircle2 } from 'lucide-react';
+import { Heart, ChevronRight, PenLine, Lock, Wifi } from 'lucide-react';
 import { getAppProducts } from '@/lib/shopify/products';
+import ProductCard from '@/components/shop/ProductCard';
 
 export default async function HeroSection() {
   const products = await getAppProducts();
@@ -183,72 +184,9 @@ export default async function HeroSection() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {products.map((product) => {
-              const imgUrl = product.images[0]?.url || '/images/startseite/memorial-card.png';
-              
-              return (
-                <div key={product.id} className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-brand-900/5 overflow-hidden flex flex-col group hover:-translate-y-1 transition-all duration-300">
-                  
-                  <div className="w-full bg-stone-100 flex items-center justify-center p-10 relative overflow-hidden h-64">
-                     <div className="absolute inset-0 bg-gradient-to-tr from-brand-secondary/40 to-brand-primary/10 opacity-60 group-hover:opacity-100 transition-opacity"></div>
-                     <img src={imgUrl} alt={product.title} className="relative z-10 w-full max-w-[160px] drop-shadow-xl rounded-2xl group-hover:scale-105 transition-transform duration-500" />
-                  </div>
-
-                  <div className="p-8 flex flex-col flex-grow">
-                    {product.badge && (
-                      <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4 border border-brand-100/50">
-                        {product.badge}
-                      </div>
-                    )}
-                    <h3 className="text-2xl font-heading font-medium text-brand-navy mb-3">{product.title}</h3>
-                    <p className="text-slate-500 font-light text-sm leading-relaxed mb-6 flex-grow">
-                      {product.shortDescription || 'Ein würdevolles Andenken für die Ewigkeit.'}
-                    </p>
-
-                    <ul className="space-y-3 mb-8">
-                      {product.iconText1 && (
-                        <li className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                          <span className="text-slate-600 font-light text-sm">{product.iconText1}</span>
-                        </li>
-                      )}
-                      {product.iconText2 && (
-                        <li className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                          <span className="text-slate-600 font-light text-sm">{product.iconText2}</span>
-                        </li>
-                      )}
-                      {/* Generelle Fallbacks, falls Metafelder leer sind */}
-                      {!product.iconText1 && !product.iconText2 && (
-                        <>
-                          <li className="flex items-start gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                            <span className="text-slate-600 font-light text-sm">Lebenslange Freischaltung inkl.</span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-brand-primary shrink-0 mt-0.5" />
-                            <span className="text-slate-600 font-light text-sm">Wetterfestes Material</span>
-                          </li>
-                        </>
-                      )}
-                    </ul>
-
-                    <div className="border-t border-slate-100 pt-6 mt-auto flex items-center justify-between">
-                      <div>
-                        <div className="text-xs text-slate-400 font-light mb-0.5">Einmalig</div>
-                        <div className="text-2xl font-heading font-bold text-slate-900 leading-none tracking-tight">
-                          CHF {(product.price / 100).toFixed(2)}<span className="text-sm text-slate-400 font-medium"></span>
-                        </div>
-                      </div>
-                      <Link href={`/medaillons`} className="btn btn-primary btn-small transition-transform hover:scale-105 shadow-md">
-                        Bestellen
-                      </Link>
-                    </div>
-                  </div>
-
-                </div>
-              );
-            })}
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
 
         </div>

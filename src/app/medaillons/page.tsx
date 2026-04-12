@@ -9,9 +9,8 @@
  */
 
 import { getAppProducts } from '@/lib/shopify/products';
-import Image from 'next/image';
-import Link from 'next/link';
 import { Package } from 'lucide-react';
+import ProductCard from '@/components/shop/ProductCard';
 import type { AppProduct } from '@/lib/shopify/types';
 
 export const metadata = {
@@ -47,75 +46,10 @@ export default async function MedaillonsPage() {
       {/* Product Grid */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => {
-              const img = product.images[0];
-              // Stock display: use Shopify variant.availableForSale
-              // Shopify manages display availability (set to 0 in Shopify to show "Ausverkauft")
-              const outOfStock = product.variants[0]?.available === false;
-
-              return (
-                <Link
-                  key={product.handle}
-                  href={`/medaillons/${product.handle}`}
-                  className="group bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                >
-                  {/* Product Image */}
-                  <div className="relative aspect-square bg-stone-100 overflow-hidden">
-                    {img ? (
-                      <Image
-                        src={img.url}
-                        alt={img.altText || product.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-16 h-16 text-stone-300" />
-                      </div>
-                    )}
-
-                    {/* Out of stock overlay */}
-                    {outOfStock && (
-                      <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-                        <span className="bg-white/90 backdrop-blur-sm text-slate-600 text-sm font-semibold px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                          Ausverkauft
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-5">
-                    <h3 className="font-serif text-xl text-slate-900 mb-1 group-hover:text-sage-700 transition">
-                      {product.title}
-                    </h3>
-                    {product.shortDescription && (
-                      <p className="text-slate-500 text-sm line-clamp-2 mb-3 font-light">
-                        {product.shortDescription}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-medium text-slate-900">
-                          CHF {(product.price / 100).toFixed(2)}
-                        </span>
-                        {product.compareAtPrice && product.compareAtPrice > product.price && (
-                          <span className="text-sm text-slate-400 line-through">
-                            CHF {(product.compareAtPrice / 100).toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                      {outOfStock && (
-                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-stone-100 text-stone-500">
-                          Ausverkauft
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <ProductCard key={product.handle} product={product} />
+            ))}
           </div>
         ) : (
           <div className="py-24 text-center">
