@@ -82,6 +82,12 @@ export interface AppProduct {
   descriptionText: string;
   /** Short teaser text — from Shopify metafield nachklang.short_description */
   shortDescription: string | null;
+  /** Custom badge text (e.g. Klassiker) — from custom.card_badge */
+  badge: string | null;
+  /** Icon text 1 — from my_fields.icon_text1 */
+  iconText1: string | null;
+  /** Icon text 2 — from my_fields.icon_text2 */
+  iconText2: string | null;
   /** USP bullet points — from Shopify metafield nachklang.usp (JSON string array) */
   uspItems: string[];
   /** Price of first variant in Rappen. Use for display and checkout. */
