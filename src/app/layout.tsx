@@ -3,7 +3,7 @@ import { Inter_Tight, Montserrat, Dancing_Script } from 'next/font/google';
 import './globals.css';
 import './custom.css';
 import NavbarWrapper from '@/components/layout/NavbarWrapper';
-import { createAdminClient } from '@/utils/supabase/admin';
+
 
 // Inter Tight — headlines & display text
 const interTight = Inter_Tight({

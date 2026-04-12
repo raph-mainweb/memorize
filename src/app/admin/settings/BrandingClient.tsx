@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { Upload, CheckCircle2, AlertCircle, Loader2, ImageIcon, Palette, RefreshCw } from 'lucide-react';
+import { Upload, CheckCircle2, AlertCircle, Loader2, ImageIcon } from 'lucide-react';
 
 interface BrandingClientProps {
   initialLogoUrl: string;
