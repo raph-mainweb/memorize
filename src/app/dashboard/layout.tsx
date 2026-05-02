@@ -6,14 +6,16 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, BookHeart, QrCode, ShoppingBag, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, BookHeart, QrCode, ShoppingBag, Settings, LogOut, ExternalLink } from 'lucide-react';
+
+const WP_SHOP = `${process.env.WP_URL || 'https://memorize.mainwebsite.ch'}/shop`;
 
 const NAV_ITEMS = [
-  { label: 'Übersicht',       href: '/dashboard',                  icon: LayoutDashboard },
-  { label: 'Gedenkseiten',    href: '/dashboard/gedenkseiten',     icon: BookHeart },
-  { label: 'Meine Medaillons',href: '/dashboard/medaillon',        icon: QrCode },
-  { label: 'Medaillon kaufen',href: '/medaillons',                 icon: ShoppingBag },
-  { label: 'Einstellungen',   href: '/dashboard/settings',         icon: Settings },
+  { label: 'Übersicht',        href: '/dashboard',                  icon: LayoutDashboard, external: false },
+  { label: 'Gedenkseiten',     href: '/dashboard/gedenkseiten',     icon: BookHeart,       external: false },
+  { label: 'Meine Medaillons', href: '/dashboard/medaillon',        icon: QrCode,          external: false },
+  { label: 'Medaillon kaufen', href: WP_SHOP,                       icon: ShoppingBag,     external: true  },
+  { label: 'Einstellungen',    href: '/dashboard/settings',         icon: Settings,        external: false },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -94,10 +96,13 @@ function SidebarLink({ item }: { item: typeof NAV_ITEMS[number] }) {
   return (
     <Link
       href={item.href}
+      target={item.external ? '_blank' : undefined}
+      rel={item.external ? 'noopener noreferrer' : undefined}
       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-stone-50 hover:text-slate-900 transition group"
     >
       <Icon className="w-4 h-4 text-slate-400 group-hover:text-slate-700 transition flex-shrink-0" />
-      {item.label}
+      <span className="flex-1">{item.label}</span>
+      {item.external && <ExternalLink className="w-3 h-3 text-slate-300" />}
     </Link>
   );
 }
