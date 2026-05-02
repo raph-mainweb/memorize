@@ -39,6 +39,8 @@ import { wpSyncProduct } from './client';
 function productToAcf(product: AppProduct): Record<string, unknown> {
   return {
     shopify_product_id: product.shopifyProductId,
+    // shopify_id alias — the WP cart plugin reads this meta key via get_post_meta($id, 'shopify_id')
+    shopify_id: product.shopifyProductId,
     shopify_handle: product.handle,
     // Price: convert Rappen back to CHF decimal (e.g. 14900 → "149.00")
     price: (product.price / 100).toFixed(2),
