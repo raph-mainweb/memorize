@@ -20,6 +20,7 @@ export interface ShopifyVariantRaw {
   price: string;            // "149.00" — Shopify returns prices as decimal strings
   compareAtPrice: string | null;
   availableForSale: boolean;
+  sku: string | null;       // Stock Keeping Unit — optional in Shopify
   // requiresShipping removed — not available on ProductVariant in current API version
 }
 
@@ -64,6 +65,8 @@ export interface AppVariant {
   compareAtPrice: number | null;
   /** Whether the variant has stock */
   available: boolean;
+  /** SKU (Stock Keeping Unit) — optional */
+  sku: string | null;
   /** Whether physical shipping is required */
   requiresShipping: boolean;
 }

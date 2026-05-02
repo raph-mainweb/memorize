@@ -108,9 +108,10 @@ function nachklang_sync_product(WP_REST_Request $request): WP_REST_Response|WP_E
     $updated_fields = [];
     foreach ($fields as $field_name => $field_value) {
         $clean_name = sanitize_key($field_name);
-        // Strings sanitizen, alles andere (int, bool) direkt übergeben
+        // wp_kses_post allows safe HTML (bold, lists, paragraphs etc.)
+        // needed for the description field which contains Shopify HTML
         $safe_value = is_string($field_value)
-            ? sanitize_textarea_field($field_value)
+            ? wp_kses_post($field_value)
             : $field_value;
 
         update_field($clean_name, $safe_value, $post_id);

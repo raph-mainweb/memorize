@@ -52,10 +52,12 @@ function productToAcf(product: AppProduct): Record<string, unknown> {
     icon_text_3: product.iconText3 || '',
     // Store USP items as a JSON string — parse in WP/ACF with a text field
     usp_items: JSON.stringify(product.uspItems),
-    // Description as plain text (ACF textarea field — HTML stripped)
-    description: product.descriptionText || '',
+    // Description: full HTML from Shopify (ACF textarea stores it as-is)
+    description: product.description || '',
     // Inventory / Availability from first variant
     inventory: product.variants[0]?.available ? 'available' : 'out_of_stock',
+    // SKU from first variant
+    sku: product.variants[0]?.sku || '',
     // First image URL for display
     image_url: product.images[0]?.url || '',
     image_alt: product.images[0]?.altText || product.title,

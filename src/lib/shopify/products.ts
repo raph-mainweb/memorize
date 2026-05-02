@@ -44,6 +44,7 @@ const PRODUCT_FIELDS = `
         price
         compareAtPrice
         availableForSale
+        sku
       }
     }
   }
@@ -112,6 +113,7 @@ function mapVariant(raw: ShopifyVariantRaw): AppVariant {
     price: chfToRappen(raw.price),
     compareAtPrice: raw.compareAtPrice ? chfToRappen(raw.compareAtPrice) : null,
     available: raw.availableForSale,
+    sku: raw.sku || null,
     requiresShipping: true, // physical medallion products always require shipping
   };
 }
