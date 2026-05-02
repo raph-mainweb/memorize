@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ShoppingBag, ArrowRight, Loader2, ArrowLeft, Gift, User } from 'lucide-react';
 
@@ -43,7 +43,6 @@ interface Cart {
 
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const cartId = searchParams.get('cart_id') || '';
 
   const [cart, setCart] = useState<Cart | null>(null);
