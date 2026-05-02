@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { Inter_Tight, Montserrat, Dancing_Script } from 'next/font/google';
 import './globals.css';
 import './custom.css';
-import NavbarWrapper from '@/components/layout/NavbarWrapper';
-
 
 // Inter Tight — headlines & display text
 const interTight = Inter_Tight({
@@ -39,17 +37,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-
   return (
     <html
       lang="de"
       className={`${interTight.variable} ${montserrat.variable} ${dancingScript.variable} scroll-smooth`}
     >
-      <head>
-      </head>
+      <head />
       <body className="font-sans selection:bg-brand-200 min-h-screen flex flex-col bg-stone-50 text-slate-800 antialiased">
-        <NavbarWrapper />
         <main className="flex-grow flex flex-col">
           {children}
         </main>
