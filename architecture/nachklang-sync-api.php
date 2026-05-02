@@ -103,18 +103,18 @@ function nachklang_sync_product(WP_REST_Request $request): WP_REST_Response|WP_E
         );
     }
 
-    // ACF-Felder via update_field() abfüllen
-    // (ACF speichert intern als Post Meta — update_field() ist der korrekte, sichere Weg)
+    // ACF-Felder via update_post_meta() abfüllen
+    // Zuverlässiger als update_field() weil kein ACF-Feldname-Lookup nötig.
+    // ACF liest direkt aus wp_postmeta — Werte erscheinen identisch in den ACF-Feldern.
     $updated_fields = [];
     foreach ($fields as $field_name => $field_value) {
         $clean_name = sanitize_key($field_name);
-        // wp_kses_post allows safe HTML (bold, lists, paragraphs etc.)
-        // needed for the description field which contains Shopify HTML
+        // wp_kses_post erlaubt sicheres HTML (Fett, Listen, Absätze etc.)
         $safe_value = is_string($field_value)
             ? wp_kses_post($field_value)
             : $field_value;
 
-        update_field($clean_name, $safe_value, $post_id);
+        update_post_meta($post_id, $clean_name, $safe_value);
         $updated_fields[] = $clean_name;
     }
 
