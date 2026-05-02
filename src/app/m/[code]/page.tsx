@@ -1,54 +1,80 @@
 import { createAdminClient } from '@/utils/supabase/admin';
+import { createClient } from '@/utils/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 
-// QR-Code Scan Redirect
-// /m/[code] is the permanent URL on every physical medallion.
-// The target memorial page is controlled in the database — never baked into the QR.
+/**
+ * /m/[code] — QR Code Scan Handler (Flow D — Customer Journey v3)
+ *
+ * Evaluates the medallion code status and routes to the correct experience:
+ *
+ * Fall 1: QR verbunden + Seite LIVE → direkt zur Gedenkseite (kein Auth nötig)
+ * Fall 2: QR frei, Aktivierungstoken-Flow (Flow B2 Gift) → /m/activate?code=[code]
+ * Fall 3: QR frei, User eingeloggt + QR-Guthaben → Seite verbinden (/dashboard/link-qr?code=[code])
+ * Fallback: Medaillon nicht aktiviert / Seite nicht live → Info-Screen
+ */
 
 export default async function MedaillonRedirect({ params }: { params: { code: string } }) {
   const db = createAdminClient();
+  const code = params.code.toUpperCase();
 
-  // Fetch code record — try fallback to memorial_id for legacy records
+  // ── Look up code record ────────────────────────────────────────────────────
   const { data: record } = await db
     .from('medallion_codes')
     .select('id, code, status, inventory_status, memorial_id, assigned_page_id')
-    .eq('code', params.code.toUpperCase())
+    .eq('code', code)
     .single();
 
-  // Code not in system → 404
-  if (!record) {
-    notFound();
+  if (!record) notFound();
+
+  // ── Determine linked page ──────────────────────────────────────────────────
+  const pageId =
+    (record as { assigned_page_id?: string | null }).assigned_page_id ||
+    (record as { memorial_id?: string | null }).memorial_id ||
+    null;
+
+  // ── FALL 1: QR verbunden → prüfe Seite und redirect ──────────────────────
+  if (pageId) {
+    const { data: memorial } = await db
+      .from('memorial_pages')
+      .select('slug, is_live, name')
+      .eq('id', pageId)
+      .single();
+
+    if (!memorial) {
+      return <InactiveScreen code={code} />;
+    }
+
+    if (!memorial.is_live) {
+      return <NotPublicScreen name={memorial.name} />;
+    }
+
+    redirect(`/gedenken/${memorial.slug}`);
   }
 
-  // Determine which page_id to look up (new field takes precedence over legacy)
-  const pageId = (record as { assigned_page_id?: string | null; memorial_id?: string | null }).assigned_page_id
-    || (record as { memorial_id?: string | null }).memorial_id;
+  // ── QR is free — check session for further routing ────────────────────────
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // No page linked → show inactive screen
-  if (!pageId) {
-    return <InactiveScreen code={params.code.toUpperCase()} />;
+  // ── FALL 3: Eingeloggt + QR-Guthaben → Seite verbinden ───────────────────
+  if (user) {
+    const { data: profile } = await db
+      .from('profiles')
+      .select('qr_credits')
+      .eq('id', user.id)
+      .single();
+
+    const credits = profile?.qr_credits ?? 0;
+    if (credits > 0) {
+      redirect(`/dashboard/link-qr?code=${code}`);
+    }
   }
 
-  // Fetch the linked memorial page
-  const { data: memorial } = await db
-    .from('memorial_pages')
-    .select('slug, is_live, name')
-    .eq('id', pageId)
-    .single();
-
-  // Memorial deleted or not found → show inactive screen
-  if (!memorial) {
-    return <InactiveScreen code={params.code.toUpperCase()} />;
-  }
-
-  // Memorial exists but not yet public
-  if (!memorial.is_live) {
-    return <NotPublicScreen name={memorial.name} />;
-  }
-
-  // All good — redirect to public memorial
-  redirect(`/gedenken/${memorial.slug}`);
+  // ── FALL 2: Kein Guthaben → Aktivierungstoken-Flow (B2 Gift) ─────────────
+  // Redirect to the activation page where user can enter their token
+  redirect(`/m/activate?code=${code}`);
 }
+
+// ── UI Components ─────────────────────────────────────────────────────────────
 
 function InactiveScreen({ code }: { code: string }) {
   return (
@@ -63,12 +89,16 @@ function InactiveScreen({ code }: { code: string }) {
         <h1 className="font-serif text-3xl text-slate-900 mb-3">Medaillon noch nicht aktiviert</h1>
         <p className="text-slate-500 font-light leading-relaxed mb-6">
           Dieses Medaillon <span className="font-mono text-slate-700">({code})</span> wurde noch keiner
-          Gedenkseite zugewiesen. Wenn du der Besitzer bist, verbinde es im Nachklang-Dashboard.
+          Gedenkseite zugewiesen. Hast du einen Aktivierungscode erhalten?
         </p>
         <a
-          href="/dashboard"
-          className="inline-block bg-slate-900 text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-slate-800 transition"
+          href={`/m/activate?code=${code}`}
+          className="inline-block bg-slate-900 text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-slate-800 transition mb-3"
         >
+          Aktivierungscode eingeben
+        </a>
+        <br />
+        <a href="/dashboard" className="text-sm text-slate-400 hover:text-slate-600 transition">
           Zum Dashboard
         </a>
       </div>

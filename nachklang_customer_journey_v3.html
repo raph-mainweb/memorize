@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nachklang.ch – Customer Journey</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: #0f0f12;
+    color: #e8e6df;
+    padding: 32px 24px 64px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b6960;
+    margin-bottom: 6px;
+  }
+  .header { margin-bottom: 40px; }
+  .header h2 {
+    font-size: 28px;
+    font-weight: 300;
+    color: #e8e6df;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .header p { font-size: 13px; color: #6b6960; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 36px;
+  }
+  .leg {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11px; color: #8a8880; letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .flows {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    max-width: 1500px;
+  }
+
+  .flow-col {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .flow-header {
+    padding: 12px 16px 10px;
+    border-radius: 8px 8px 0 0;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0;
+  }
+  .flow-a .flow-header { background: #1a1630; color: #7c6fd4; border: 1px solid #2d2450; border-bottom: none; }
+  .flow-b .flow-header { background: #0d1a2e; color: #4a8fd4; border: 1px solid #1a3050; border-bottom: none; }
+  .flow-c .flow-header { background: #1a1128; color: #b06fc8; border: 1px solid #2e1a40; border-bottom: none; }
+  .flow-d .flow-header { background: #0d1f18; color: #3ea87a; border: 1px solid #133026; border-bottom: none; }
+  .flow-e .flow-header { background: #1f1408; color: #d4763a; border: 1px solid #3a2010; border-bottom: none; }
+
+  .flow-body {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 12px 20px;
+    border-radius: 0 0 8px 8px;
+    gap: 0;
+    flex: 1;
+  }
+  .flow-a .flow-body { background: #110e1e; border: 1px solid #2d2450; border-top: none; }
+  .flow-b .flow-body { background: #080f1c; border: 1px solid #1a3050; border-top: none; }
+  .flow-c .flow-body { background: #110a1c; border: 1px solid #2e1a40; border-top: none; }
+  .flow-d .flow-body { background: #060f0a; border: 1px solid #133026; border-top: none; }
+  .flow-e .flow-body { background: #110a04; border: 1px solid #3a2010; border-top: none; }
+
+  .node {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: center;
+    position: relative;
+  }
+  .node-process {
+    background: #1a1820;
+    border: 1px solid #2e2c38;
+    color: #c8c6bf;
+  }
+  .node-action {
+    background: #1e1c2a;
+    border: 1px solid #38344a;
+    color: #d4d2cc;
+  }
+  .node-system {
+    background: #161618;
+    border: 1px solid #2a2a2e;
+    color: #888680;
+    font-size: 11px;
+  }
+  .node-decision {
+    padding: 10px 12px;
+    transform: rotate(0deg);
+    background: #201c14;
+    border: 1px solid #3a3420;
+    color: #d4b860;
+    font-size: 11px;
+  }
+  .node-start {
+    background: #181818;
+    border: 1px solid #333;
+    color: #8a8880;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+  .node-end {
+    background: #181818;
+    border: 1px solid #333;
+    color: #6b6960;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+  .node-stripe {
+    background: #0d1a10;
+    border: 1px solid #1e3822;
+    color: #5dc88e;
+  }
+  .node-shopify {
+    background: #1a1208;
+    border: 1px solid #3a2a10;
+    color: #d4840e;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+  .tag-wp { background: #2a1f40; color: #9c80e0; }
+  .tag-app { background: #0d1f38; color: #6aaae0; }
+  .tag-stripe { background: #0a1f12; color: #3ec878; }
+  .tag-sys { background: #1a1a1e; color: #6a6870; }
+  .tag-shopify { background: #2a1a04; color: #c8780a; }
+
+  .arrow {
+    width: 1px;
+    height: 16px;
+    background: #2e2c38;
+    margin: 0 auto;
+    position: relative;
+  }
+  .arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: -4px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #3e3c4a;
+  }
+  .arrow-a { background: #3d2d70; }
+  .arrow-a::after { border-top-color: #4d3d80; }
+  .arrow-b { background: #1a3868; }
+  .arrow-b::after { border-top-color: #2a4878; }
+  .arrow-c { background: #351840; }
+  .arrow-c::after { border-top-color: #451858; }
+  .arrow-d { background: #143020; }
+  .arrow-d::after { border-top-color: #204030; }
+  .arrow-e { background: #3a2010; }
+  .arrow-e::after { border-top-color: #4a3020; }
+
+  .divider {
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #2e2c38 20%, #2e2c38 80%, transparent);
+    margin: 10px auto;
+  }
+  .section-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4a4848;
+    margin: 6px 0 4px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .entry-section {
+    max-width: 1500px;
+    margin-bottom: 20px;
+    background: #0d0d10;
+    border: 1px solid #1e1e24;
+    border-radius: 8px;
+    padding: 20px 24px;
+  }
+  .entry-row {
+    display: flex; align-items: center; gap: 0;
+    justify-content: flex-start;
+  }
+  .entry-node {
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .entry-arrow {
+    width: 32px;
+    height: 1px;
+    background: #2e2c38;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .entry-arrow::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: -4px;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 6px solid #3e3c4a;
+  }
+  .split-label {
+    font-size: 10px;
+    color: #6b6960;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .decision-diamond {
+    width: 80px;
+    height: 44px;
+    background: #201c14;
+    border: 1px solid #3a3420;
+    transform: rotate(45deg);
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .diamond-wrap {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .diamond-inner {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 500;
+    color: #d4b860;
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .branch-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 12px;
+  }
+  .branch-label {
+    font-size: 10px;
+    color: #6b6960;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .branch-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .footer {
+    max-width: 1500px;
+    margin-top: 32px;
+    padding: 16px 20px;
+    background: #0a0a0d;
+    border: 1px solid #1a1a1e;
+    border-radius: 6px;
+    display: flex; gap: 32px; flex-wrap: wrap;
+  }
+  .footer-item { font-size: 11px; color: #6b6960; }
+  .footer-item strong { color: #a8a6a0; font-weight: 500; }
+
+  .qr-section {
+    max-width: 1500px;
+    margin-bottom: 16px;
+    background: #080f0b;
+    border: 1px solid #133026;
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .qr-title { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #3ea87a; margin-bottom: 12px; }
+  .qr-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .qr-case {
+    flex: 1; min-width: 180px;
+    background: #060f0a;
+    border: 1px solid #133026;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .qr-case-title { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #3ea87a; margin-bottom: 8px; }
+  .qr-step { font-size: 11px; color: #8a8880; padding: 3px 0; border-bottom: 1px solid #0f1e14; line-height: 1.4; }
+  .qr-step:last-child { border-bottom: none; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>nachklang.ch</h1>
+  <h2>Customer Journey – Gesamtübersicht</h2>
+  <p>Alle Flows · Stand Mai 2026 · v3</p>
+</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:#9c80e0"></div> WordPress</div>
+  <div class="leg"><div class="leg-dot" style="background:#6aaae0"></div> Web-App</div>
+  <div class="leg"><div class="leg-dot" style="background:#3ec878"></div> Stripe</div>
+  <div class="leg"><div class="leg-dot" style="background:#c8780a"></div> Shopify</div>
+  <div class="leg"><div class="leg-dot" style="background:#6a6870"></div> System/Backend</div>
+  <div class="leg"><div class="leg-dot" style="background:#d4763a"></div> Flow E: Medaillon-Addon</div>
+</div>
+
+<!-- Entry Section -->
+<div class="entry-section">
+  <div style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#6b6960;margin-bottom:14px;">Einstieg (WordPress)</div>
+  <div class="entry-row">
+    <div class="entry-node node-start">
+      <span class="tag tag-wp" style="display:block;margin-bottom:4px;">WordPress</span>
+      Besucher auf<br>nachklang.ch
+    </div>
+    <div class="entry-arrow"></div>
+    <div class="entry-node node-process">Landingpage</div>
+    <div class="entry-arrow"></div>
+
+    <div class="diamond-wrap">
+      <div class="decision-diamond"></div>
+      <div class="diamond-inner">Was möchte<br>der Kunde?</div>
+    </div>
+
+    <div class="branch-labels">
+      <div class="branch-label"><div class="branch-dot" style="background:#7c6fd4"></div> Flow A: Gedenkseite erstellen</div>
+      <div class="branch-label"><div class="branch-dot" style="background:#4a8fd4"></div> Flow B: Medaillon kaufen (+ Seite)</div>
+      <div class="branch-label"><div class="branch-dot" style="background:#b06fc8"></div> Flow C: Bestehende Seite freischalten</div>
+      <div class="branch-label"><div class="branch-dot" style="background:#d4763a"></div> Flow E: Medaillon zu bestehender Seite</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 Flows -->
+<div class="flows">
+
+  <!-- FLOW A -->
+  <div class="flow-col flow-a">
+    <div class="flow-header">Flow A – Gedenkseite erstellen</div>
+    <div class="flow-body">
+      <div class="node node-action"><span class="tag tag-wp">WP</span><br>CTA: „Gedenkseite erstellen"</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-process"><span class="tag tag-app">App</span><br>Weiterleitung Web-App</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-action">E-Mail eingeben</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-system"><span class="tag tag-sys">Resend</span><br>OTP-Code per Mail<br><span style="font-size:10px;color:#4a4848">15 min gültig · einmalig</span></div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-action">Code eingeben</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-system"><span class="tag tag-sys">Security</span><br>OTP verifiziert<br>Session-Token erstellt (httpOnly Cookie)</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-process">Login / Account erstellt</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-action"><span class="tag tag-app">App</span><br>Editor – Seite aufbauen</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-system">Status: Draft<br><span style="font-size:10px;color:#4a4848">draft_id gebunden an user_id</span></div>
+      <div class="divider"></div>
+      <div class="section-label">Freischaltung</div>
+      <div class="node node-action">„Seite live schalten"</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>Stripe Session erstellen<br><span style="font-size:10px;color:#4a4848">client_reference_id = user_id<br>metadata: page_id, flow=A</span></div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-stripe"><span class="tag tag-stripe">Stripe</span><br>Checkout (Seiten-Aktivierung)</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-system"><span class="tag tag-sys">Webhook</span><br>Signatur geprüft (stripe-signature)<br>→ page_id aus metadata<br>→ Ownership-Check: page.user_id = user_id</div>
+      <div class="arrow arrow-a"></div>
+      <div class="node node-process">Status → LIVE</div>
+      <div class="divider"></div>
+      <div class="section-label">Optional danach</div>
+      <div class="node node-action">Dashboard → „Medaillon bestellen"<br><span style="font-size:10px;color:#6b6960">→ weiter zu Flow E</span></div>
+    </div>
+  </div>
+
+  <!-- FLOW B -->
+  <div class="flow-col flow-b">
+    <div class="flow-header">Flow B – Medaillon kaufen (inkl. Gedenkseite)</div>
+    <div class="flow-body">
+      <div class="node node-process"><span class="tag tag-wp">WP</span><br>Produktseite · Medaillon auswählen</div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-decision">Auswahl:<br>Für mich / Als Geschenk</div>
+      <div class="divider"></div>
+      <div class="section-label">B1 – Für mich</div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>Eingeloggt? → Session prüfen<br>Nicht eingeloggt → Login-Modal<br>(OTP, dann weiter)</div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>Stripe Session erstellen<br><span style="font-size:10px;color:#4a4848">client_reference_id = user_id<br>metadata: flow=B1<br>Line Item 1: Medaillon (Shopify price)<br>Line Item 2: Seiten-Aktivierung (fix)</span></div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-stripe"><span class="tag tag-stripe">Stripe</span><br>Checkout</div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-system"><span class="tag tag-sys">Webhook</span><br>Signatur geprüft<br>→ QR-Guthaben +1<br>→ Seiten-Aktivierungsrecht gesetzt<br>→ Shopify Order ausgelöst</div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-action">QR scannen nach Lieferung<br><span style="font-size:10px;color:#6b6960">→ Flow D</span></div>
+      <div class="divider"></div>
+      <div class="section-label">B2 – Als Geschenk</div>
+      <div class="node node-decision" style="font-size:10px;">Käufer eingeloggt?<br><span style="color:#8a8880">Optional: Account erstellen</span></div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-action">Konto erstellen (optional)<br><span style="font-size:10px;color:#6b6960">E-Mail → OTP → Account<br>oder: Als Gast weiter</span></div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>Stripe Session erstellen<br><span style="font-size:10px;color:#4a4848">metadata: flow=B2, gift=true<br>Line Item 1: Medaillon<br>Line Item 2: Seiten-Aktivierung</span></div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-stripe"><span class="tag tag-stripe">Stripe</span><br>Checkout</div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-system"><span class="tag tag-sys">Webhook</span><br>Signatur geprüft<br>→ Aktivierungstoken erstellen<br><span style="font-size:10px;color:#4a4848">UUID · einmalig · 90 Tage gültig<br>gebunden an order_id</span><br>→ Shopify Order ausgelöst</div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-system"><span class="tag tag-sys">Resend</span><br>Bestätigungsmail an Käufer<br><span style="font-size:10px;color:#4a4848">mit Aktivierungstoken / Anleitung</span></div>
+      <div class="arrow arrow-b"></div>
+      <div class="node node-action">Empfänger scannt QR<br><span style="font-size:10px;color:#6b6960">→ Flow D (Fall 2)</span></div>
+    </div>
+  </div>
+
+  <!-- FLOW C -->
+  <div class="flow-col flow-c">
+    <div class="flow-header">Flow C – Seite freischalten (Draft)</div>
+    <div class="flow-body">
+      <div class="node node-process"><span class="tag tag-app">App</span><br>User eingeloggt<br>Draft-Seite vorhanden</div>
+      <div class="arrow arrow-c"></div>
+      <div class="node node-system"><span class="tag tag-sys">Security</span><br>Session-Check<br>page.user_id = session.user_id?<br><span style="font-size:10px;color:#c05050">Nein → 403, Abbruch</span></div>
+      <div class="arrow arrow-c"></div>
+      <div class="node node-action">„Seite freischalten" klicken</div>
+      <div class="arrow arrow-c"></div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>Stripe Session erstellen<br><span style="font-size:10px;color:#4a4848">client_reference_id = user_id<br>metadata: page_id, flow=C</span></div>
+      <div class="arrow arrow-c"></div>
+      <div class="node node-stripe"><span class="tag tag-stripe">Stripe</span><br>Checkout (Seiten-Aktivierung)</div>
+      <div class="arrow arrow-c"></div>
+      <div class="node node-system"><span class="tag tag-sys">Webhook</span><br>Signatur geprüft<br>→ Ownership-Check<br>→ Status: Draft → LIVE<br>→ Idempotency-Key prüfen<br><span style="font-size:10px;color:#4a4848">(kein Doppel-Aktivieren)</span></div>
+      <div class="arrow arrow-c"></div>
+      <div class="node node-process">Status → LIVE ✓</div>
+    </div>
+  </div>
+
+  <!-- FLOW D -->
+  <div class="flow-col flow-d">
+    <div class="flow-header">Flow D – QR Scan (Global Entry)</div>
+    <div class="flow-body">
+      <div class="node node-start">QR Code wird gescannt</div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>QR-UUID lookup<br>Status prüfen</div>
+      <div class="divider"></div>
+      <div class="section-label">Fall 1: QR bereits verbunden</div>
+      <div class="node node-process">Gedenkseite anzeigen<br><span style="font-size:10px;color:#6b6960">Frontend, öffentlich, kein Auth</span></div>
+      <div class="divider"></div>
+      <div class="section-label">Fall 2: QR frei · Aktivierungstoken</div>
+      <div class="node node-action">Aktivierungstoken eingeben<br><span style="font-size:10px;color:#6b6960">(vom Käufer erhalten)</span></div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-system"><span class="tag tag-sys">Security</span><br>Token prüfen:<br>· existiert? · nicht abgelaufen?<br>· noch nicht verwendet?</div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-decision" style="font-size:10px;">Account vorhanden?</div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-action">Login (OTP)<br>oder Registrierung<br><span style="font-size:10px;color:#6b6960">E-Mail → OTP → Session</span></div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-action">Gedenkseite erstellen / verbinden</div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-system">Token als „verwendet" markieren<br>QR verbunden ✓</div>
+      <div class="divider"></div>
+      <div class="section-label">Fall 3: Eingeloggt + QR-Guthaben</div>
+      <div class="node node-system"><span class="tag tag-sys">Security</span><br>Guthaben prüfen ≥ 1<br>QR-Status: frei?</div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-action">„Mit welcher Seite verbinden?"<br><span style="font-size:10px;color:#6b6960">Auswahl aus eigenen Live-Seiten</span></div>
+      <div class="arrow arrow-d"></div>
+      <div class="node node-system">Guthaben −1<br>QR verbunden ✓</div>
+    </div>
+  </div>
+
+  <!-- FLOW E -->
+  <div class="flow-col flow-e">
+    <div class="flow-header">Flow E – Medaillon zu bestehender Seite</div>
+    <div class="flow-body">
+      <div class="node node-start"><span class="tag tag-app">App</span><br>User eingeloggt<br>Seite bereits LIVE</div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-action">Dashboard<br>„Medaillon hinzufügen"</div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-process"><span class="tag tag-wp">WP</span><br>Produktseite Medaillons<br><span style="font-size:10px;color:#6b6960">Shopify Produkte, kein Seiten-Add-on</span></div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-action">Medaillon auswählen</div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-system"><span class="tag tag-sys">Backend</span><br>Stripe Session erstellen<br><span style="font-size:10px;color:#4a4848">client_reference_id = user_id<br>metadata: flow=E, page_id<br>Line Item 1: Medaillon only<br>(kein Seiten-Aktivierungs-Item)</span></div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-stripe" style="border-color:#4a3020;color:#d4763a;background:#180e04"><span class="tag tag-shopify" style="background:#2a1804;color:#d4763a">Stripe</span><br>Checkout (nur Medaillon-Preis)</div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-system"><span class="tag tag-sys">Webhook</span><br>Signatur geprüft<br>→ flow=E: kein Seiten-Recht<br>→ QR-Guthaben +1<br>→ Shopify Order ausgelöst</div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-action">QR scannen nach Lieferung<br><span style="font-size:10px;color:#6b6960">→ Flow D (Fall 3)</span></div>
+      <div class="arrow arrow-e"></div>
+      <div class="node node-system">QR verbunden mit bestehender Seite ✓</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Security Overview -->
+<div class="qr-section" style="margin-top:20px;border-color:#3a1414;">
+  <div class="qr-title" style="color:#c05050;">Security-Übersicht</div>
+  <div class="qr-row">
+    <div class="qr-case" style="border-color:#3a1414;">
+      <div class="qr-case-title" style="color:#c05050;">Auth / Session</div>
+      <div class="qr-step">OTP via E-Mail (Resend) · 15 min gültig · einmalig</div>
+      <div class="qr-step">Session-Token: httpOnly Cookie (nicht JS-lesbar)</div>
+      <div class="qr-step">Kein Passwort → kein Passwort-Leak-Risiko</div>
+    </div>
+    <div class="qr-case" style="border-color:#3a1414;">
+      <div class="qr-case-title" style="color:#c05050;">Stripe Webhooks</div>
+      <div class="qr-step">stripe-signature Header per HMAC validieren</div>
+      <div class="qr-step">Idempotency-Key: verhindert Doppel-Aktivierung</div>
+      <div class="qr-step">flow + page_id immer aus metadata lesen (nie URL)</div>
+    </div>
+    <div class="qr-case" style="border-color:#3a1414;">
+      <div class="qr-case-title" style="color:#c05050;">Ownership Checks</div>
+      <div class="qr-step">Alle Mutations: page.user_id = session.user_id</div>
+      <div class="qr-step">403-Abbruch bei Mismatch (nie silent fail)</div>
+      <div class="qr-step">Flow C: Ownership vor Stripe-Session prüfen</div>
+    </div>
+    <div class="qr-case" style="border-color:#3a1414;">
+      <div class="qr-case-title" style="color:#c05050;">Aktivierungstoken (B2)</div>
+      <div class="qr-step">UUID v4 (nicht erratbar, nicht sequential)</div>
+      <div class="qr-step">Einmalig verwendbar · 90 Tage TTL</div>
+      <div class="qr-step">Gebunden an order_id · Status: pending/used/expired</div>
+    </div>
+  </div>
+</div>
+
+<!-- Pricing Logic -->
+
+<div class="qr-section" style="margin-top:20px;border-color:#2a1a08;">
+  <div class="qr-title" style="color:#d4763a;">Preis-Logik: Dynamischer Stripe Checkout</div>
+  <div class="qr-row">
+    <div class="qr-case" style="border-color:#2a1a08;">
+      <div class="qr-case-title" style="color:#d4763a;">Stripe Line Items</div>
+      <div class="qr-step"><strong style="color:#c8c6bf">Line Item 1:</strong> Medaillon-Preis (aus Shopify)</div>
+      <div class="qr-step"><strong style="color:#c8c6bf">Line Item 2:</strong> Seiten-Aktivierung (fix, App-Config)</div>
+      <div class="qr-step" style="color:#d4763a">Flow E → Line Item 2 entfällt</div>
+    </div>
+    <div class="qr-case" style="border-color:#2a1a08;">
+      <div class="qr-case-title" style="color:#d4763a;">Shopify Produkte</div>
+      <div class="qr-step">Nur physische Medaillon-Produkte</div>
+      <div class="qr-step">Kein Duplikat pro Produkt nötig</div>
+      <div class="qr-step">Beliebig viele Designs / Materialien</div>
+    </div>
+    <div class="qr-case" style="border-color:#2a1a08;">
+      <div class="qr-case-title" style="color:#d4763a;">Webhook Logik</div>
+      <div class="qr-step">Flow B → QR-Guthaben + Seiten-Recht</div>
+      <div class="qr-step">Flow E → nur QR-Guthaben</div>
+      <div class="qr-step">Erkennbar via Stripe Line Items</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="qr-section" style="margin-top:20px;">
+  <div class="qr-title">Kern-Konzept: Drei getrennte Objekte</div>
+  <div class="qr-row">
+    <div class="qr-case">
+      <div class="qr-case-title">1 · Gedenkseite</div>
+      <div class="qr-step">Inhalt / Content</div>
+      <div class="qr-step">Draft → LIVE Status</div>
+      <div class="qr-step">Stripe-Aktivierung</div>
+    </div>
+    <div class="qr-case">
+      <div class="qr-case-title">2 · QR-Code</div>
+      <div class="qr-step">Physisches Objekt</div>
+      <div class="qr-step">Frei oder Verbunden</div>
+      <div class="qr-step">Aktivierungscode</div>
+    </div>
+    <div class="qr-case">
+      <div class="qr-case-title">3 · Aktivierungsrecht</div>
+      <div class="qr-step">Bezahlvorgang (Stripe)</div>
+      <div class="qr-step">Shopify-Bestellung</div>
+      <div class="qr-step">QR-Guthaben</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-item"><strong>Page 1</strong> · Customer Journey (diese Ansicht)</div>
+  <div class="footer-item"><strong>Page 2</strong> · QR Logic (Scan States)</div>
+  <div class="footer-item"><strong>Page 3</strong> · Checkout Logic (Stripe Webhook)</div>
+  <div class="footer-item" style="margin-left:auto;color:#4a4848;">nachklang.ch · Figma-Exportvorlage</div>
+</div>
+
+</body>
+</html>
