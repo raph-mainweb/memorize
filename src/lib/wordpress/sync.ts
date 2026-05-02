@@ -52,6 +52,8 @@ function productToAcf(product: AppProduct): Record<string, unknown> {
     icon_text_3: product.iconText3 || '',
     // Store USP items as a JSON string — parse in WP/ACF with a text field
     usp_items: JSON.stringify(product.uspItems),
+    // Description HTML (for WYSIWYG field in WP)
+    description: product.description || '',
     // First image URL for display
     image_url: product.images[0]?.url || '',
     image_alt: product.images[0]?.altText || product.title,

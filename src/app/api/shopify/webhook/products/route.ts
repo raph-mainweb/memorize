@@ -22,7 +22,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { syncProductsToWordPress } from '@/lib/wordpress/sync';
 
-const SHOPIFY_WEBHOOK_SECRET = process.env.SHOPIFY_CLIENT_SECRET || '';
+// Shopify signs webhooks with a shared secret shown in
+// Shopify Admin → Settings → Notifications → Webhooks section.
+// Set this as SHOPIFY_WEBHOOK_SECRET in Vercel environment variables.
+const SHOPIFY_WEBHOOK_SECRET = process.env.SHOPIFY_WEBHOOK_SECRET || process.env.SHOPIFY_CLIENT_SECRET || '';
 
 export async function POST(req: NextRequest) {
   // ── Verify HMAC signature ─────────────────────────────────────────────────
