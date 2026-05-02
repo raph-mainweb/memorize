@@ -7,9 +7,11 @@
  *   WordPress Shop → User klickt "Zur Kasse" → Redirect zu /checkout?cart_id=xxx
  *   Diese Seite liest den Cart aus localStorage, zeigt eine Zusammenfassung
  *   und leitet dann via /api/checkout/from-cart zu Stripe weiter.
+ *
+ * Note: useSearchParams() muss in <Suspense> gewrappt sein (Next.js 14 Anforderung).
  */
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ShoppingBag, ArrowRight, Loader2, ArrowLeft, Gift, User } from 'lucide-react';
@@ -41,7 +43,9 @@ interface Cart {
   updated_at?: string;
 }
 
-export default function CheckoutPage() {
+// ── Inner component that uses useSearchParams ─────────────────────────────────
+// Must be wrapped in <Suspense> by the parent (Next.js 14 requirement)
+function CheckoutInner() {
   const searchParams = useSearchParams();
   const cartId = searchParams.get('cart_id') || '';
 
@@ -55,11 +59,14 @@ export default function CheckoutPage() {
       if (raw) {
         const parsed: Cart = JSON.parse(raw);
         setCart(parsed);
+      } else {
+        setCart({ cart_id: cartId, items: [] });
       }
     } catch {
       setError('Warenkorb konnte nicht gelesen werden.');
+      setCart({ cart_id: cartId, items: [] });
     }
-  }, []);
+  }, [cartId]);
 
   const subtotal = (cart?.items || []).reduce(
     (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0
@@ -94,15 +101,13 @@ export default function CheckoutPage() {
     }
   };
 
+  // Loading state (cart not yet read from localStorage)
   if (!cart) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
-          <ShoppingBag className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-          <p className="text-slate-500 mb-4">Warenkorb wird geladen…</p>
-          <Link href={WP_SHOP} className="text-sm text-slate-400 hover:text-slate-700 flex items-center gap-1 justify-center">
-            <ArrowLeft className="w-3.5 h-3.5" /> Zurück zum Shop
-          </Link>
+          <Loader2 className="w-8 h-8 text-stone-400 mx-auto mb-4 animate-spin" />
+          <p className="text-slate-500">Warenkorb wird geladen…</p>
         </div>
       </div>
     );
@@ -119,7 +124,7 @@ export default function CheckoutPage() {
           </Link>
           <h1 className="text-2xl font-serif text-slate-900">Dein Warenkorb</h1>
           <p className="text-sm text-slate-400 mt-1">
-            {cart.items.length} Artikel · {cartId && <span className="font-mono text-xs">#{cartId.slice(-6)}</span>}
+            {cart.items.length} Artikel {cartId && <span className="font-mono text-xs">· #{cartId.slice(-6)}</span>}
           </p>
         </div>
 
@@ -203,5 +208,18 @@ export default function CheckoutPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// ── Page export — wraps CheckoutInner in Suspense ─────────────────────────────
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-stone-400 animate-spin" />
+      </div>
+    }>
+      <CheckoutInner />
+    </Suspense>
   );
 }
