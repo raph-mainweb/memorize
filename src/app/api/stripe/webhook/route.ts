@@ -52,7 +52,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const pageId = session.metadata?.page_id || null;
   const shopifyProductId = session.metadata?.shopify_product_id || null;
   const shopifyHandle = session.metadata?.shopify_handle || null;
-  const isGift = session.metadata?.gift === 'true';
   const userEmail = session.metadata?.user_email || session.customer_details?.email || '';
 
   console.log(`[Webhook] session=${session.id} flow=${flow} user=${userId} page=${pageId} product=${shopifyProductId}`);

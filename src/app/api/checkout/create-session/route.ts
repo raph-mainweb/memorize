@@ -51,7 +51,6 @@ export async function POST(req: NextRequest) {
     };
 
     const { flow, page_id, shopify_product_id, shopify_handle } = body;
-    const origin = req.headers.get('origin') || APP_URL;
 
     // ── Auth (required for A, B1, C, E — optional for B2) ─────────────────
     const supabase = createClient();
