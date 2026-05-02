@@ -10,6 +10,7 @@
 
 import { getAppProducts } from '@/lib/shopify/products';
 import { ExternalLink, Package } from 'lucide-react';
+import WpSyncButton from './WpSyncButton';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN || '';
 export const revalidate = 60;
@@ -34,15 +35,18 @@ export default async function ProductsPage() {
             </a>
           </p>
         </div>
-        <a
-          href={`https://${SHOPIFY_DOMAIN}/admin/products/new`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl text-sm font-semibold hover:bg-slate-800 transition"
-        >
-          <ExternalLink className="w-4 h-4" />
-          In Shopify erstellen
-        </a>
+        <div className="flex items-center gap-3">
+          <WpSyncButton />
+          <a
+            href={`https://${SHOPIFY_DOMAIN}/admin/products/new`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl text-sm font-semibold hover:bg-slate-800 transition"
+          >
+            <ExternalLink className="w-4 h-4" />
+            In Shopify erstellen
+          </a>
+        </div>
       </header>
 
       {/* Tag info */}
