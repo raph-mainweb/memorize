@@ -28,7 +28,7 @@
 
 import { getAppProducts } from '@/lib/shopify/products';
 import type { AppProduct } from '@/lib/shopify/types';
-import { wpListPosts, wpCreatePost, wpUpdatePost, WpPost } from './client';
+import { wpSyncProduct } from './client';
 
 // ── ACF Field Mapping ───────────────────────────────────────────────────────
 
@@ -102,52 +102,25 @@ export async function syncProductsToWordPress(): Promise<SyncResult> {
     return result;
   }
 
-  // 2. Fetch all existing WP posts (to build slug → WP post ID map)
-  let existingPosts: WpPost[];
-  try {
-    existingPosts = await wpListPosts();
-    result.totalWp = existingPosts.length;
-    console.log(`[WP Sync] Found ${existingPosts.length} existing WP posts.`);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[WP Sync] Failed to fetch WP posts: ${msg}`);
-    result.errors.push({ handle: '__wp_fetch__', error: msg });
-    return result;
-  }
 
-  // Build slug → post ID lookup
-  const slugToWpId = new Map<string, number>();
-  for (const post of existingPosts) {
-    slugToWpId.set(post.slug, post.id);
-  }
-
-  // 3. Upsert each Shopify product into WordPress
+  // 3. Upsert each Shopify product into WordPress via custom endpoint
+  // The custom endpoint handles create-or-update by slug internally using update_field()
   for (const product of shopifyProducts) {
     const handle = product.handle;
-    const acf = productToAcf(product);
 
     try {
-      const existingId = slugToWpId.get(handle);
+      const syncResult = await wpSyncProduct({
+        slug: handle,
+        title: product.title,
+        fields: productToAcf(product),
+      });
 
-      if (existingId) {
-        // UPDATE existing post
-        await wpUpdatePost(existingId, {
-          title: product.title,
-          status: 'publish',
-          acf,
-        });
-        result.updated.push(handle);
-        console.log(`[WP Sync] Updated: ${handle} (WP ID: ${existingId})`);
-      } else {
-        // CREATE new post
-        await wpCreatePost({
-          title: product.title,
-          slug: handle,
-          status: 'publish',
-          acf,
-        });
+      if (syncResult.action === 'created') {
         result.created.push(handle);
-        console.log(`[WP Sync] Created: ${handle}`);
+        console.log(`[WP Sync] Created: ${handle} (WP ID: ${syncResult.post_id})`);
+      } else {
+        result.updated.push(handle);
+        console.log(`[WP Sync] Updated: ${handle} (WP ID: ${syncResult.post_id})`);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

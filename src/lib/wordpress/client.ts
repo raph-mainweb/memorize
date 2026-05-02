@@ -106,3 +106,42 @@ export async function wpUpdatePost(postId: number, payload: Partial<WpPostPayloa
     body: JSON.stringify(payload),
   });
 }
+
+// ── Custom Sync Endpoint ────────────────────────────────────────────────────
+
+export interface WpSyncProductPayload {
+  slug: string;
+  title: string;
+  fields: Record<string, unknown>;
+}
+
+export interface WpSyncProductResult {
+  success: boolean;
+  action: 'created' | 'updated';
+  post_id: number;
+  slug: string;
+  updated_fields: string[];
+}
+
+/**
+ * Syncs a single product to WordPress via the custom Nachklang endpoint.
+ * Uses update_field() server-side — works with ACF Free and ACF PRO.
+ * Requires the PHP snippet from architecture/wp-functions-snippet.php
+ * to be added to functions.php in WordPress.
+ */
+export async function wpSyncProduct(payload: WpSyncProductPayload): Promise<WpSyncProductResult> {
+  const url = `${WP_URL}/wp-json/nachklang/v1/sync-product`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`[WP Sync] ${res.status} ${res.statusText} \u2014 ${url}\n${body}`);
+  }
+  return res.json() as Promise<WpSyncProductResult>;
+}
