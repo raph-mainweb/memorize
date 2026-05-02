@@ -8,7 +8,6 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { QrCode, ArrowRight, ShoppingBag, CheckCircle2, Package, Truck } from 'lucide-react';
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
 const WP_SHOP = `${process.env.WP_URL || 'https://memorize.mainwebsite.ch'}/shop`;
 
 export const metadata = { title: 'Meine Medaillons | Nachklang' };
@@ -97,7 +96,6 @@ export default async function MedaillonIndexPage() {
             const statusKey = med.inventory_status || med.status;
             const st = statusConfig[statusKey] || statusConfig.assigned;
             const Icon = st.icon;
-            const qrUrl = `${SITE_URL}/m/${med.code}`;
 
             return (
               <div key={med.id} className="bg-white rounded-2xl border border-stone-100 px-5 py-4 flex items-center gap-4 hover:shadow-sm transition">

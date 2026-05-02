@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Heart, Globe, Lock, QrCode, Eye, ArrowRight, Zap } from 'lucide-react';
+import { Plus, Heart, Globe, Lock, QrCode, Eye, ArrowRight } from 'lucide-react';
 import UnlockButton from '../UnlockButton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
