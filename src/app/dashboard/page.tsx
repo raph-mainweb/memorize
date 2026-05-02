@@ -3,9 +3,10 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Plus, QrCode, ArrowRight, Heart, Lock, Globe,
-  Zap, Eye, CheckCircle2, ShoppingBag, Sparkles, ExternalLink
+  Plus, QrCode, ArrowRight, Heart, Globe,
+  Zap, Eye, ShoppingBag, ExternalLink
 } from 'lucide-react';
+
 import UnlockButton from './UnlockButton';
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
