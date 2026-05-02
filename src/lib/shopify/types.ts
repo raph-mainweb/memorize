@@ -88,6 +88,8 @@ export interface AppProduct {
   iconText1: string | null;
   /** Icon text 2 — from my_fields.icon_text2 */
   iconText2: string | null;
+  /** Icon text 3 — from my_fields.icon_text3 */
+  iconText3: string | null;
   /** USP bullet points — from Shopify metafield nachklang.usp (JSON string array) */
   uspItems: string[];
   /** Price of first variant in Rappen. Use for display and checkout. */

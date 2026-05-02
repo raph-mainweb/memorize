@@ -123,10 +123,12 @@ function mapProduct(raw: ShopifyProductRaw): AppProduct {
 
   // Parse metafields from edges→node connection (filter by namespace+key in code)
   const metafieldNodes = (raw.metafields?.edges || []).map((e) => e.node).filter(Boolean);
-  const shortDescMeta = metafieldNodes.find((m) => m?.namespace === 'nachklang' && m?.key === 'short_description');
+  const shortDescMeta = metafieldNodes.find((m) => m?.namespace === 'nachklang' && m?.key === 'short_description')
+    || metafieldNodes.find((m) => m?.namespace === 'my_fields' && m?.key === 'kurzbeschreibung_text');
   const badgeMeta = metafieldNodes.find((m) => m?.namespace === 'custom' && m?.key === 'card_badge');
   const iconText1Meta = metafieldNodes.find((m) => m?.namespace === 'my_fields' && m?.key === 'icon_text1');
   const iconText2Meta = metafieldNodes.find((m) => m?.namespace === 'my_fields' && m?.key === 'icon_text2');
+  const iconText3Meta = metafieldNodes.find((m) => m?.namespace === 'my_fields' && m?.key === 'icon_text3');
   const uspMeta = metafieldNodes.find((m) => m?.namespace === 'nachklang' && m?.key === 'usp');
 
   let uspItems: string[] = [];
@@ -150,6 +152,7 @@ function mapProduct(raw: ShopifyProductRaw): AppProduct {
     badge: badgeMeta?.value || null,
     iconText1: iconText1Meta?.value || null,
     iconText2: iconText2Meta?.value || null,
+    iconText3: iconText3Meta?.value || null,
     uspItems,
     price: firstVariant?.price ?? 0,
     compareAtPrice: firstVariant?.compareAtPrice ?? null,
