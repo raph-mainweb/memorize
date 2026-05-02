@@ -1,21 +1,17 @@
 'use client';
 
-/**
- * /m/activate — Aktivierungstoken-Eingabe (Flow D Fall 2 / Flow B2 Gift)
- *
- * Shown when a QR code scan reveals a free medallion with no owner yet,
- * and the visitor doesn't have a QR credit in their account.
- *
- * Flow:
- * 1. User enters their activation token (UUID from gift confirmation email)
- * 2. Token is validated via API
- * 3. If valid: user is prompted to login/register, then linked to the medallion
- */
-
+import { Suspense } from 'react';
 import { useState, FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ActivatePage() {
+/**
+ * /m/activate — Aktivierungstoken-Eingabe (Flow D Fall 2 / Flow B2 Gift)
+ *
+ * useSearchParams() must be inside a Suspense boundary in Next.js 14.
+ * ActivateForm holds all the logic; ActivatePage wraps it in Suspense.
+ */
+
+function ActivateForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get('code') || '';
@@ -44,7 +40,7 @@ export default function ActivatePage() {
       }
 
       // Token valid — redirect to auth with token in URL for post-login activation
-      router.push(`/auth/login?redirect=/dashboard/neue&activation_token=${token.trim()}&medallion_code=${code}`);
+      router.push(`/auth/login?redirect=/dashboard/neu&activation_token=${token.trim()}&medallion_code=${code}`);
     } catch {
       setError('Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
     } finally {
@@ -103,5 +99,18 @@ export default function ActivatePage() {
         </p>
       </div>
     </div>
+  );
+}
+
+// Suspense wrapper required by Next.js 14 for useSearchParams()
+export default function ActivatePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+      </div>
+    }>
+      <ActivateForm />
+    </Suspense>
   );
 }
