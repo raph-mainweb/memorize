@@ -126,7 +126,19 @@ END $$;
 -- Also run schema reload after:
 -- NOTIFY pgrst, 'reload schema';
 
--- 7. Extend medallion_orders table with missing columns
+
+-- 8. Add meta JSONB column to memorial_pages (stores new section data)
+DO $$
+BEGIN
+    BEGIN
+        ALTER TABLE memorial_pages ADD COLUMN IF NOT EXISTS meta JSONB DEFAULT '{}'::jsonb;
+    EXCEPTION WHEN duplicate_column THEN null;
+    END;
+END $$;
+
+-- Reload schema cache
+NOTIFY pgrst, 'reload schema';
+
 -- Run in Supabase SQL Editor:
 DO $$
 BEGIN
