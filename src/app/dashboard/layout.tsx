@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { LayoutDashboard, BookHeart, QrCode, ShoppingBag, Settings, LogOut, ExternalLink } from 'lucide-react';
+import { signout } from '@/app/auth/actions';
 
 const WP_SHOP = `${process.env.WP_URL || 'https://memorize.mainwebsite.ch'}/shop`;
 
@@ -62,7 +63,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-800 truncate">{email}</p>
             </div>
-            <form action="/auth/logout" method="POST">
+            <form action={signout}>
               <button type="submit" title="Abmelden" className="text-slate-400 hover:text-slate-700 transition">
                 <LogOut className="w-4 h-4" />
               </button>
