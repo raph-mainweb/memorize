@@ -18,6 +18,7 @@ interface ProductFormProps {
     gallery_images?: string[];
     is_active?: boolean;
     stripe_price_id?: string;
+    wp_url?: string;
   };
 }
 
@@ -201,6 +202,21 @@ export default function ProductForm({ mode, initialData }: ProductFormProps) {
             placeholder="price_xxxxxxxxxxxxxxxx"
           />
           <p className="text-xs text-slate-400 mt-2">Verknüpft mit einem Stripe Preis.</p>
+        </div>
+
+        {/* WordPress Product URL */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">
+            WordPress Produktseite (Optional)
+          </label>
+          <input
+            name="wp_url"
+            type="url"
+            defaultValue={initialData?.wp_url}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+            placeholder="https://nachklang.ch/medaillon/..."
+          />
+          <p className="text-xs text-slate-400 mt-2">Link zur Produktseite auf WordPress — wird im Checkout-Modal angezeigt.</p>
         </div>
 
         {/* Actions */}

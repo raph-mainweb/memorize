@@ -139,6 +139,17 @@ END $$;
 -- Reload schema cache
 NOTIFY pgrst, 'reload schema';
 
+-- 9. Add wp_url column to products (WordPress product page link)
+DO $$
+BEGIN
+    BEGIN
+        ALTER TABLE products ADD COLUMN IF NOT EXISTS wp_url TEXT;
+    EXCEPTION WHEN duplicate_column THEN null;
+    END;
+END $$;
+
+NOTIFY pgrst, 'reload schema';
+
 -- Run in Supabase SQL Editor:
 DO $$
 BEGIN

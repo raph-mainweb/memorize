@@ -16,6 +16,7 @@ export async function createProduct(formData: FormData) {
   const gallery_raw = formData.get('gallery_json') as string;
   const is_active = formData.get('is_active') === 'on';
   const stripe_price_id = formData.get('stripe_price_id') as string;
+  const wp_url = formData.get('wp_url') as string;
 
   let usp: string[] = [];
   let gallery_images: string[] = [];
@@ -32,6 +33,7 @@ export async function createProduct(formData: FormData) {
     gallery_images,
     is_active,
     stripe_price_id: stripe_price_id || null,
+    wp_url: wp_url || null,
   }).select('id').single();
 
   if (error) {
@@ -55,6 +57,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const gallery_raw = formData.get('gallery_json') as string;
   const is_active = formData.get('is_active') === 'on';
   const stripe_price_id = formData.get('stripe_price_id') as string;
+  const wp_url = formData.get('wp_url') as string;
 
   let usp: string[] = [];
   let gallery_images: string[] = [];
@@ -71,6 +74,7 @@ export async function updateProduct(id: string, formData: FormData) {
     gallery_images,
     is_active,
     stripe_price_id: stripe_price_id || null,
+    wp_url: wp_url || null,
   }).eq('id', id);
 
   if (error) {
