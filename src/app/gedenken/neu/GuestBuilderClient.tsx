@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import AuthModal from './AuthModal';
@@ -100,6 +100,29 @@ export default function GuestBuilderClient() {
   const update = useCallback((patch: Partial<MemorialState>) => {
     setData(p => ({ ...p, ...patch }));
     setIsDirty(true);
+  }, []);
+
+  // ── Google OAuth: State nach Redirect wiederherstellen ────────────────────
+  useEffect(() => {
+    const restoreAfterOAuth = async () => {
+      const saved = sessionStorage.getItem('nachklang_guest_draft');
+      if (!saved) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // User ist eingeloggt + gespeicherter Entwurf vorhanden → wiederherstellen
+      try {
+        const restored = JSON.parse(saved) as MemorialState;
+        sessionStorage.removeItem('nachklang_guest_draft');
+        setData(restored);
+        setStep('builder');
+        // Kurz warten damit State gesetzt ist, dann direkt persistieren
+        setTimeout(() => persistToDb(user.id), 300);
+      } catch {
+        sessionStorage.removeItem('nachklang_guest_draft');
+      }
+    };
+    restoreAfterOAuth();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'title_image' | 'profile_image') => {
@@ -255,6 +278,7 @@ export default function GuestBuilderClient() {
     <>
       {showAuthModal && (
         <AuthModal
+          guestData={data}
           onSuccess={() => supabase.auth.getUser().then(({ data: { user } }) => user && persistToDb(user.id))}
           onClose={() => setShowAuthModal(false)}
         />

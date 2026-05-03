@@ -4,9 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { X, Mail, Loader2, ArrowRight, ShieldCheck, RotateCcw } from 'lucide-react';
 
+import type { MemorialState } from './GuestBuilderClient';
+
+const STORAGE_KEY = 'nachklang_guest_draft';
+
 interface AuthModalProps {
   onSuccess: () => void;
   onClose: () => void;
+  guestData?: MemorialState; // Wird vor Google OAuth in sessionStorage gesichert
 }
 
 const OTP_LENGTH = 6;
@@ -57,7 +62,7 @@ function OtpInput({ value, onChange }: { value: string[]; onChange: (v: string[]
 }
 
 // ── Main Modal ────────────────────────────────────────────────────────────────
-export default function AuthModal({ onSuccess, onClose }: AuthModalProps) {
+export default function AuthModal({ onSuccess, onClose, guestData }: AuthModalProps) {
   const supabase = createClient();
   const [step, setStep]       = useState<'email' | 'code'>('email');
   const [email, setEmail]     = useState('');
@@ -128,10 +133,12 @@ export default function AuthModal({ onSuccess, onClose }: AuthModalProps) {
     startCooldown();
   };
 
-  // ── Google OAuth (vorbereitet — State-Verlust-Hinweis) ────────────────────
+  // ── Google OAuth — State vor Redirect in sessionStorage sichern ─────────
   const handleGoogle = async () => {
-    // HINWEIS: Google OAuth macht einen Browser-Redirect → Builder-State geht verloren.
-    // TODO: State vor Redirect in sessionStorage sichern und nach Redirect wiederherstellen.
+    if (guestData) {
+      // Text-State sichern (Bilder/Object-URLs können nicht serialisiert werden)
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(guestData));
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback?next=/gedenken/neu` },
