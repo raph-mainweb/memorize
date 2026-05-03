@@ -61,7 +61,7 @@ export default function UnlockModal({ memorialId, onClose }: Props) {
   const selectedProduct = products.find(p => p.id === selectedProductId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
 
