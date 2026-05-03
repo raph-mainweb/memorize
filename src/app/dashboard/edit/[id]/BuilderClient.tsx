@@ -5,6 +5,7 @@ import { useState, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import SectionEditor from '@/app/gedenken/neu/SectionEditor';
 import PreviewMemorial from '@/components/builder/PreviewMemorial';
+import UnlockModal from '@/app/dashboard/UnlockModal';
 import type { MemorialState, SectionId, ImageFiles } from '@/app/gedenken/neu/GuestBuilderClient';
 import {
   Save, ChevronLeft, Loader2, Eye, CheckCircle2, ExternalLink,
@@ -83,7 +84,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
   const [activeSection, setActiveSection] = useState<SectionId>('title');
   const [mobileTab, setMobileTab]         = useState<'nav' | 'editor' | 'preview'>('editor');
   const [isSaving, setIsSaving]   = useState(false);
-  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [isDirty, setIsDirty]     = useState(false);
   const [savedAt, setSavedAt]     = useState<Date | null>(null);
 
@@ -189,22 +190,23 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
     setSavedAt(new Date());
   };
 
-  // ── Unlock (Stripe) ────────────────────────────────────────────────────────
-  const handleUnlock = async () => {
-    setIsUnlocking(true);
-    await handleSave();
-    try {
-      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ memorial_id: id }) });
-      const d = await res.json();
-      if (d.url) window.location.href = d.url;
-      else { alert('Fehler: ' + (d.error || 'Unbekannt')); setIsUnlocking(false); }
-    } catch { alert('Ein Fehler ist aufgetreten'); setIsUnlocking(false); }
+  // ── Unlock: speichern, dann Modal öffnen ───────────────────────────────
+  const handleUnlockClick = async () => {
+    // Erst speichern damit alle Daten in der DB sind
+    if (isDirty) await handleSave();
+    setShowUnlockModal(true);
   };
 
   const activeLabel = SECTIONS.find(s => s.id === activeSection)?.label ?? '';
 
   return (
     <>
+      {showUnlockModal && (
+        <UnlockModal
+          memorialId={id}
+          onClose={() => setShowUnlockModal(false)}
+        />
+      )}
       {/* ── Mobile notice ── */}
       <div className="fixed inset-0 z-[60] bg-stone-50 lg:hidden flex flex-col">
         <div className="flex border-b border-stone-200 bg-white flex-shrink-0">
@@ -227,7 +229,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
           )}
           {mobileTab === 'preview' && <PreviewMemorial data={data} />}
         </div>
-        <MobileSaveBar isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} onSave={handleSave} isLive={data.is_live} onUnlock={handleUnlock} isUnlocking={isUnlocking} />
+        <MobileSaveBar isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} onSave={handleSave} isLive={data.is_live} onUnlock={handleUnlockClick} />
       </div>
 
       {/* ── Desktop 3-column layout ── */}
@@ -267,10 +269,9 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
                 <p className="text-xs text-slate-400 mt-0.5">Änderungen sofort in der Vorschau sichtbar</p>
               </div>
               {!data.is_live && (
-                <button onClick={handleUnlock} disabled={isUnlocking}
+                <button onClick={handleUnlockClick} disabled={isSaving}
                   className="flex items-center gap-1.5 bg-sage-600 hover:bg-sage-500 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow-sm disabled:opacity-50 flex-shrink-0 ml-3">
-                  {isUnlocking ? <Loader2 className="w-3 h-3 animate-spin" /> : '🔓'}
-                  Freischalten (49.–)
+                  🔓 Freischalten (49.–)
                 </button>
               )}
             </div>
@@ -301,7 +302,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
 
         {/* Fixed Save Bar */}
         <DesktopSaveBar isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} onSave={handleSave}
-          isLive={data.is_live} onUnlock={handleUnlock} isUnlocking={isUnlocking} slug={data.slug} />
+          isLive={data.is_live} onUnlock={handleUnlockClick} slug={data.slug} />
       </div>
     </>
   );
@@ -335,9 +336,9 @@ function SaveStatus({ isSaving, isDirty, savedAt }: { isSaving: boolean; isDirty
 }
 
 // ── Save Bars ──────────────────────────────────────────────────────────────────
-interface SaveBarProps { isSaving: boolean; isDirty: boolean; savedAt: Date | null; onSave: () => void; isLive: boolean; onUnlock: () => void; isUnlocking: boolean; slug?: string; }
+interface SaveBarProps { isSaving: boolean; isDirty: boolean; savedAt: Date | null; onSave: () => void; isLive: boolean; onUnlock: () => void; slug?: string; }
 
-function DesktopSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, isUnlocking, slug }: SaveBarProps) {
+function DesktopSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, slug }: SaveBarProps) {
   return (
     <div className="h-14 bg-white border-t border-stone-200 px-6 flex items-center justify-between flex-shrink-0">
       <SaveStatus isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} />
@@ -349,9 +350,9 @@ function DesktopSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, 
           </a>
         )}
         {!isLive && (
-          <button onClick={onUnlock} disabled={isUnlocking}
+          <button onClick={onUnlock} disabled={isSaving}
             className="flex items-center gap-2 bg-sage-600 hover:bg-sage-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm disabled:opacity-50">
-            {isUnlocking ? <Loader2 className="w-4 h-4 animate-spin" /> : '🔓'} Freischalten (CHF 49.–)
+            🔓 Freischalten (CHF 49.–)
           </button>
         )}
         <button onClick={onSave} disabled={isSaving}
@@ -364,13 +365,13 @@ function DesktopSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, 
   );
 }
 
-function MobileSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, isUnlocking }: SaveBarProps) {
+function MobileSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock }: SaveBarProps) {
   return (
     <div className="bg-white border-t border-stone-200 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-2">
       <SaveStatus isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} />
       <div className="flex items-center gap-2">
         {!isLive && (
-          <button onClick={onUnlock} disabled={isUnlocking}
+          <button onClick={onUnlock} disabled={isSaving}
             className="flex items-center gap-1.5 bg-sage-600 text-white text-xs font-semibold px-3 py-2.5 rounded-xl transition disabled:opacity-50">
             🔓 49.–
           </button>
