@@ -108,7 +108,7 @@ export default async function DashboardOverview() {
           label="QR-Guthaben"
           value={String(qrCredits)}
           sub={qrCredits > 0 ? 'Verfügbar' : undefined}
-          action={qrCredits === 0 ? { label: 'Bestellen →', href: '/medaillons' } : undefined}
+          action={qrCredits === 0 ? { label: 'Bestellen →', href: `${WP_URL}/shop` } : undefined}
         />
       </div>
 
@@ -200,7 +200,8 @@ export default async function DashboardOverview() {
             icon={<ShoppingBag className="w-5 h-5 text-violet-500" />}
             title="Medaillon bestellen"
             desc="QR-Medaillon für die Gedenkstätte"
-            href="/medaillons"
+            href={`${WP_URL}/shop`}
+            external
             bg="bg-violet-50"
           />
           <QuickCard
