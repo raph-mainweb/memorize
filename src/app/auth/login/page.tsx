@@ -8,7 +8,7 @@ import { Mail, ArrowRight, ShieldCheck, RotateCcw, Loader2 } from 'lucide-react'
 
 // ─── OTP Input ───────────────────────────────────────────────────────────────
 
-const OTP_LENGTH = 8
+const OTP_LENGTH = 6
 
 function OtpInput({
   value,
@@ -185,7 +185,7 @@ export default function LoginPage() {
     e.preventDefault()
     const token = otp.join('')
     if (token.length < OTP_LENGTH) {
-      setError('Bitte alle 8 Stellen eingeben.')
+      setError('Bitte alle 6 Stellen eingeben.')
       return
     }
     setError(null)
