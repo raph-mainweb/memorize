@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, Globe, ShoppingBag, ArrowRight, ExternalLink, Package, CheckCircle2 } from 'lucide-react';
+import { X, Loader2, Globe, ShoppingBag, ArrowRight, Package, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 
 interface Product {
-  id: string;
+  id: string;                   // Shopify GID
+  shopifyProductId: string;     // numeric Shopify ID
   title: string;
-  short_description: string | null;
-  price_in_cents: number;
-  gallery_images: string[];
-  wp_url: string | null;
+  shortDescription: string | null;
+  price: number;                // in Rappen (cents)
+  images: { url: string; altText: string | null }[];
 }
 
 type Step = 'choose' | 'medallion' | 'loading';
@@ -34,7 +34,7 @@ export default function UnlockModal({ memorialId, onClose }: Props) {
       .then(d => {
         const prods = d.products || [];
         setProducts(prods);
-        if (prods.length > 0) setSelectedProductId(prods[0].id);
+        if (prods.length > 0) setSelectedProductId(prods[0].shopifyProductId);
         setLoadingProducts(false);
       });
   }, []);
@@ -52,7 +52,7 @@ export default function UnlockModal({ memorialId, onClose }: Props) {
     }
     const res = await fetch('/api/checkout/bundle', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memorial_id: memorialId, product_id: selectedProductId }),
+      body: JSON.stringify({ memorial_id: memorialId, shopify_product_id: selectedProductId }),
     });
     const data = await res.json();
     if (data.url) window.location.href = data.url;
@@ -165,10 +165,10 @@ export default function UnlockModal({ memorialId, onClose }: Props) {
             ) : products.length > 0 ? (
               <div className="space-y-2">
                 {products.map(p => {
-                  const img = p.gallery_images?.[0];
-                  const isSelected = selectedProductId === p.id;
+                  const img = p.images?.[0]?.url;
+                  const isSelected = selectedProductId === p.shopifyProductId;
                   return (
-                    <button key={p.id} type="button" onClick={() => setSelectedProductId(p.id)}
+                    <button key={p.id} type="button" onClick={() => setSelectedProductId(p.shopifyProductId)}
                       className={`w-full text-left flex items-center gap-3 p-3 rounded-xl border-2 transition ${
                         isSelected ? 'border-sage-600 bg-sage-50' : 'border-stone-200 bg-white hover:border-stone-300'
                       }`}>
@@ -185,14 +185,10 @@ export default function UnlockModal({ memorialId, onClose }: Props) {
                         <p className="font-medium text-slate-900 text-sm truncate">{p.title}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-slate-500">
-                            CHF {((49 * 100 + (p.price_in_cents || 0)) / 100).toFixed(0)}.–
+                            CHF {(p.price / 100).toFixed(0)}.–
                           </span>
-                          {p.wp_url && (
-                            <a href={p.wp_url} target="_blank" rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              className="flex items-center gap-0.5 text-[11px] text-sage-600 hover:text-sage-700 transition">
-                              Im Shop ansehen <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
+                          {p.shortDescription && (
+                            <span className="text-xs text-slate-400">{p.shortDescription}</span>
                           )}
                         </div>
                       </div>

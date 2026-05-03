@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@/utils/supabase/server';
-import { createAdminClient } from '@/utils/supabase/admin';
+import { getAppProductById } from '@/lib/shopify/products';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,29 +18,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { memorial_id, product_id } = body;
+    const { memorial_id, shopify_product_id } = body;
 
-    if (!memorial_id || !product_id) {
-      return NextResponse.json({ error: 'memorial_id und product_id erforderlich' }, { status: 400 });
+    if (!memorial_id || !shopify_product_id) {
+      return NextResponse.json({ error: 'memorial_id und shopify_product_id erforderlich' }, { status: 400 });
     }
 
-    // Fetch unlock price
-    const adminDb = createAdminClient();
-    const { data: setting } = await adminDb
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'unlock_price')
-      .single();
-
-    const unlockPrice = setting?.value || { amount: 4900, currency: 'chf', name: 'Gedenkseite Freischaltung' };
-
-    // Fetch product
-    const { data: product } = await adminDb
-      .from('products')
-      .select('id, title, price_in_cents, is_active')
-      .eq('id', product_id)
-      .eq('is_active', true)
-      .single();
+    // Fetch product from Shopify — gets correct price and title
+    const product = await getAppProductById(shopify_product_id);
 
     if (!product) {
       return NextResponse.json({ error: 'Produkt nicht gefunden' }, { status: 404 });
@@ -48,22 +33,15 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app';
 
+    // Shopify price IS the total (page unlock + medallion combined)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'twint'],
       line_items: [
         {
           price_data: {
-            currency: unlockPrice.currency,
-            product_data: { name: unlockPrice.name },
-            unit_amount: unlockPrice.amount,
-          },
-          quantity: 1,
-        },
-        {
-          price_data: {
             currency: 'chf',
-            product_data: { name: `Medaillon: ${product.title}` },
-            unit_amount: product.price_in_cents,
+            product_data: { name: `Nachklang: ${product.title}` },
+            unit_amount: product.price, // z.B. 5200 = CHF 52.–
           },
           quantity: 1,
         },
@@ -77,7 +55,7 @@ export async function POST(req: NextRequest) {
         memorial_id,
         unlock: 'true',
         type: 'bundle',
-        product_id,
+        shopify_product_id,
       },
     });
 
