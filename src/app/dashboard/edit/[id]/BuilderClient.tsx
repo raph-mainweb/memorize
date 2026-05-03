@@ -231,7 +231,7 @@ export default function BuilderClient({ initialData }: { initialData: any }) {
       </div>
 
       {/* ── Desktop 3-column layout ── */}
-      <div className="hidden lg:flex h-screen flex-col bg-stone-100">
+      <div className="hidden lg:flex fixed inset-0 z-50 flex-col bg-stone-100">
         <div className="flex flex-1 overflow-hidden">
 
           {/* Left: Section Nav */}
