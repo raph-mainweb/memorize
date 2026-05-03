@@ -194,7 +194,7 @@ export default function GuestBuilderClient() {
     if (error || !row) { alert('Fehler beim Speichern: ' + error?.message); return; }
     setIsDirty(false);
     setSavedAt(new Date());
-    router.push(`/dashboard/edit/${row.id}`);
+    router.push('/dashboard');
   }, [data, files, supabase, router]);
 
   const handleSave = async () => {
