@@ -1,389 +1,386 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import SectionEditor from '@/app/gedenken/neu/SectionEditor';
 import PreviewMemorial from '@/components/builder/PreviewMemorial';
-import { Save, ChevronLeft, Image as ImageIcon, Calendar, AlignLeft, LayoutPanelLeft, BadgeCheck, Camera, Plus, Trash2, Loader2, Sparkles } from 'lucide-react';
+import type { MemorialState, SectionId, ImageFiles } from '@/app/gedenken/neu/GuestBuilderClient';
+import {
+  Save, ChevronLeft, Loader2, Eye, CheckCircle2, ExternalLink,
+  User, AlignLeft, MapPin, Image as ImageIcon,
+  Music, Flame, Calendar, Globe, Heart, QrCode, Lock,
+} from 'lucide-react';
 import Link from 'next/link';
 
+// ── Section nav definition (mirrors GuestBuilderClient) ───────────────────────
+const SECTIONS: { id: SectionId; label: string; icon: React.ElementType }[] = [
+  { id: 'title',     label: 'Titelbereich',      icon: User },
+  { id: 'biography', label: 'Lebensgeschichte',   icon: AlignLeft },
+  { id: 'timeline',  label: 'Lebensstationen',    icon: MapPin },
+  { id: 'gallery',   label: 'Bildergalerie',      icon: ImageIcon },
+  { id: 'music',     label: 'Musik & Video',      icon: Music },
+  { id: 'candles',   label: 'Gedenkkerzen',       icon: Flame },
+  { id: 'funeral',   label: 'Bestattungsinfos',   icon: Calendar },
+  { id: 'grave',     label: 'Grabstandort',       icon: Globe },
+  { id: 'donation',  label: 'Spenden & Links',    icon: Heart },
+  { id: 'qr',        label: 'QR-Medaillon',       icon: QrCode },
+  { id: 'privacy',   label: 'Privatsphäre',       icon: Lock },
+];
+
+// ── Map DB record → MemorialState ─────────────────────────────────────────────
+function fromDb(d: any): MemorialState {
+  const m = d.meta ?? {};
+  return {
+    name:          d.name ?? '',
+    type:          d.type ?? 'human',
+    slug:          d.slug ?? '',
+    subtitle:      m.subtitle ?? 'In liebevoller Erinnerung',
+    birth_date:    d.birth_date ?? '',
+    birth_place:   d.birth_place ?? '',
+    death_date:    d.death_date ?? '',
+    death_place:   d.death_place ?? '',
+    title_image:   d.title_image ?? null,
+    profile_image: d.profile_image ?? null,
+    color_theme:   m.color_theme ?? 'sage',
+    biography:     d.biography ?? '',
+    biography_font_size: m.biography_font_size ?? 'md',
+    timeline:      m.timeline ?? [],
+    gallery:       d.gallery ?? [],
+    gallery_layout:m.gallery_layout ?? 'grid',
+    spotify_url:   m.spotify_url ?? '',
+    youtube_url:   m.youtube_url ?? '',
+    video_caption: m.video_caption ?? '',
+    candles_enabled:         m.candles_enabled        ?? true,
+    candles_allow_message:   m.candles_allow_message   ?? true,
+    candles_message_required:m.candles_message_required ?? false,
+    candles_moderated:       m.candles_moderated       ?? false,
+    funeral_date:    m.funeral_date    ?? '',
+    funeral_time:    m.funeral_time    ?? '',
+    funeral_location:m.funeral_location ?? '',
+    funeral_address: m.funeral_address  ?? '',
+    funeral_notes:   m.funeral_notes    ?? '',
+    grave_cemetery:  m.grave_cemetery   ?? '',
+    grave_field:     m.grave_field      ?? '',
+    grave_maps_url:  m.grave_maps_url   ?? '',
+    donation_url:    m.donation_url     ?? '',
+    donation_title:  m.donation_title   ?? '',
+    donation_description: m.donation_description ?? '',
+    donation_button_text: m.donation_button_text ?? 'Jetzt spenden',
+    visibility:    m.visibility   ?? 'public',
+    page_password: m.page_password ?? '',
+    is_live:       d.is_live ?? false,
+  };
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function BuilderClient({ initialData }: { initialData: any }) {
   const supabase = createClient();
-  const [memorial, setMemorial] = useState(initialData);
-  const [isSaving, setIsSaving] = useState(false);
+  const id = initialData.id as string;
+
+  const [data, setData]         = useState<MemorialState>(() => fromDb(initialData));
+  const [files, setFiles]       = useState<ImageFiles>({ title_image: null, profile_image: null, gallery: [] });
+  const [activeSection, setActiveSection] = useState<SectionId>('title');
+  const [mobileTab, setMobileTab]         = useState<'nav' | 'editor' | 'preview'>('editor');
+  const [isSaving, setIsSaving]   = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
-  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [isDirty, setIsDirty]     = useState(false);
+  const [savedAt, setSavedAt]     = useState<Date | null>(null);
 
-  // Handle generic input changes
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-    setMemorial((prev: any) => ({ ...prev, [name]: value }));
+  // ── State helpers ──────────────────────────────────────────────────────────
+  const update = useCallback((patch: Partial<MemorialState>) => {
+    setData(p => ({ ...p, ...patch }));
+    setIsDirty(true);
+  }, []);
+
+  // Upload directly to Supabase (user is already authenticated)
+  const uploadFile = async (file: File, folder: string, name: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const path = `${folder}/${id}-${name}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('memorial-media').upload(path, file);
+    if (error) { alert('Upload-Fehler: ' + error.message); return null; }
+    return supabase.storage.from('memorial-media').getPublicUrl(path).data.publicUrl;
   };
 
-  // Real Image Upload Handler
-  const handleImageUpload = async (e: any, field: string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingField(field);
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${memorial.id}-${field}-${Date.now()}.${fileExt}`;
-    const filePath = `${field}s/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('memorial-media')
-      .upload(filePath, file);
-
-    if (uploadError) {
-      alert('Fehler beim Upload: ' + uploadError.message);
-      setUploadingField(null);
-      return;
-    }
-
-    const { data } = supabase.storage.from('memorial-media').getPublicUrl(filePath);
-    
-    setMemorial((prev: any) => ({ ...prev, [field]: data.publicUrl }));
-    setUploadingField(null);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'title_image' | 'profile_image') => {
+    const file = e.target.files?.[0]; if (!file) return;
+    // Show preview immediately via Object URL
+    update({ [field]: URL.createObjectURL(file) });
+    setFiles(p => ({ ...p, [field]: file }));
   };
 
-  // Gallery Upload Handler
-  const handleGalleryUpload = async (e: any) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingField('gallery');
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${memorial.id}-gallery-${Date.now()}.${fileExt}`;
-    const filePath = `gallery/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('memorial-media')
-      .upload(filePath, file);
-
-    if (uploadError) {
-      alert('Fehler beim Upload: ' + uploadError.message);
-      setUploadingField(null);
-      return;
-    }
-
-    const { data } = supabase.storage.from('memorial-media').getPublicUrl(filePath);
-    
-    const currentGallery = memorial.gallery || [];
-    setMemorial((prev: any) => ({ 
-      ...prev, 
-      gallery: [...currentGallery, { url: data.publicUrl, caption: '' }] 
-    }));
-    setUploadingField(null);
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const url = URL.createObjectURL(file);
+    setData(p => ({ ...p, gallery: [...p.gallery, { url, caption: '' }] }));
+    setFiles(p => ({ ...p, gallery: [...p.gallery, file] }));
+    setIsDirty(true);
   };
 
-  const updateGalleryCaption = (index: number, caption: string) => {
-    const newGallery = [...(memorial.gallery || [])];
-    newGallery[index].caption = caption;
-    setMemorial((prev: any) => ({ ...prev, gallery: newGallery }));
+  const removeGalleryImage = (idx: number) => {
+    setData(p => ({ ...p, gallery: p.gallery.filter((_, i) => i !== idx) }));
+    setFiles(p => ({ ...p, gallery: p.gallery.filter((_, i) => i !== idx) }));
+    setIsDirty(true);
   };
 
-  const removeGalleryImage = (index: number) => {
-    const newGallery = [...(memorial.gallery || [])];
-    newGallery.splice(index, 1);
-    setMemorial((prev: any) => ({ ...prev, gallery: newGallery }));
+  const updateCaption = (idx: number, caption: string) => {
+    setData(p => { const g = [...p.gallery]; g[idx] = { ...g[idx], caption }; return { ...p, gallery: g }; });
+    setIsDirty(true);
   };
 
-  // Save changes to DB
+  // ── Save (DB update) ───────────────────────────────────────────────────────
   const handleSave = async () => {
     setIsSaving(true);
-    
-    // Wir übergeben das gesamte Objekt wie es ist, da nun echte URLs existieren.
+
+    // Upload any new image files
+    let titleUrl   = data.title_image;
+    let profileUrl = data.profile_image;
+    const galleryRows = [...data.gallery];
+
+    if (files.title_image)   titleUrl   = await uploadFile(files.title_image,   'title_images',   'title')   ?? titleUrl;
+    if (files.profile_image) profileUrl = await uploadFile(files.profile_image, 'profile_images', 'profile') ?? profileUrl;
+
+    // Upload new gallery images (those that are Object URLs from File objects)
+    for (let i = 0; i < files.gallery.length; i++) {
+      // Find the gallery entry that corresponds to this File (it will have a blob: URL)
+      const blobEntries = data.gallery.filter(g => g.url.startsWith('blob:'));
+      if (blobEntries[i]) {
+        const url = await uploadFile(files.gallery[i], 'gallery', `g${Date.now()}-${i}`);
+        if (url) {
+          const galleryIdx = data.gallery.findIndex(g => g.url === blobEntries[i].url);
+          if (galleryIdx !== -1) galleryRows[galleryIdx] = { ...galleryRows[galleryIdx], url };
+        }
+      }
+    }
+
+    const meta = {
+      subtitle: data.subtitle, color_theme: data.color_theme,
+      biography_font_size: data.biography_font_size,
+      timeline: data.timeline, gallery_layout: data.gallery_layout,
+      spotify_url: data.spotify_url, youtube_url: data.youtube_url, video_caption: data.video_caption,
+      candles_enabled: data.candles_enabled, candles_allow_message: data.candles_allow_message,
+      candles_message_required: data.candles_message_required, candles_moderated: data.candles_moderated,
+      funeral_date: data.funeral_date, funeral_time: data.funeral_time,
+      funeral_location: data.funeral_location, funeral_address: data.funeral_address, funeral_notes: data.funeral_notes,
+      grave_cemetery: data.grave_cemetery, grave_field: data.grave_field, grave_maps_url: data.grave_maps_url,
+      donation_url: data.donation_url, donation_title: data.donation_title,
+      donation_description: data.donation_description, donation_button_text: data.donation_button_text,
+      visibility: data.visibility, page_password: data.page_password,
+    };
+
     const { error } = await supabase
       .from('memorial_pages')
       .update({
-        name: memorial.name,
-        slug: memorial.slug,
-        type: memorial.type,
-        biography: memorial.biography,
-        birth_date: memorial.birth_date,
-        birth_place: memorial.birth_place,
-        death_date: memorial.death_date,
-        death_place: memorial.death_place,
-        title_image: memorial.title_image,
-        profile_image: memorial.profile_image,
-        gallery: memorial.gallery || []
+        name: data.name, slug: data.slug, biography: data.biography || null,
+        birth_date: data.birth_date || null, birth_place: data.birth_place || null,
+        death_date: data.death_date || null, death_place: data.death_place || null,
+        title_image: titleUrl, profile_image: profileUrl,
+        gallery: galleryRows, meta,
       })
-      .eq('id', memorial.id);
+      .eq('id', id);
 
     setIsSaving(false);
-    if (error) {
-      alert('Fehler beim Speichern: ' + error.message);
-    }
+    if (error) { alert('Fehler beim Speichern: ' + error.message); return; }
+
+    // Update state with final Supabase URLs
+    setData(p => ({ ...p, title_image: titleUrl, profile_image: profileUrl, gallery: galleryRows }));
+    setFiles({ title_image: null, profile_image: null, gallery: [] });
+    setIsDirty(false);
+    setSavedAt(new Date());
   };
 
+  // ── Unlock (Stripe) ────────────────────────────────────────────────────────
   const handleUnlock = async () => {
     setIsUnlocking(true);
-    await handleSave(); // save changes before paying
+    await handleSave();
     try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memorial_id: memorial.id }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Fehler beim Bezahlen: ' + (data.error || 'Netzwerkfehler'));
-        setIsUnlocking(false);
-      }
-    } catch {
-      alert('Ein Fehler ist aufgetreten');
-      setIsUnlocking(false);
-    }
+      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ memorial_id: id }) });
+      const d = await res.json();
+      if (d.url) window.location.href = d.url;
+      else { alert('Fehler: ' + (d.error || 'Unbekannt')); setIsUnlocking(false); }
+    } catch { alert('Ein Fehler ist aufgetreten'); setIsUnlocking(false); }
   };
 
+  const activeLabel = SECTIONS.find(s => s.id === activeSection)?.label ?? '';
+
   return (
-    <div className="flex h-screen bg-stone-100 overflow-hidden font-sans">
-      
-      {/* LEFT SIDEBAR: Builder Controls */}
-      <div className="w-full lg:w-[450xl] xl:w-[500px] flex-shrink-0 bg-white border-r border-stone-200 flex flex-col z-20 shadow-2xl lg:shadow-none h-full relative overflow-y-auto hidden lg:flex">
-        
-        {/* Header */}
-        <div className="p-6 border-b border-stone-100 sticky top-0 bg-white/90 backdrop-blur-md z-10">
-          <div className="flex items-center justify-between mb-6">
-            <Link href="/dashboard" className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center text-slate-500 hover:bg-stone-50 transition">
-              <ChevronLeft className="w-5 h-5" />
-            </Link>
-            <div className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full bg-stone-100 text-stone-500 ml-auto">
-              Vorschau-Modus
-            </div>
-          </div>
-          <h1 className="text-2xl font-serif text-slate-900 leading-tight">Gedenkseite bearbeiten</h1>
-          <p className="text-sm text-slate-500 mt-1">Änderungen werden live in der Vorschau angezeigt.</p>
+    <>
+      {/* ── Mobile notice ── */}
+      <div className="fixed inset-0 z-[60] bg-stone-50 lg:hidden flex flex-col">
+        <div className="flex border-b border-stone-200 bg-white flex-shrink-0">
+          {(['nav', 'editor', 'preview'] as const).map(tab => (
+            <button key={tab} onClick={() => setMobileTab(tab)}
+              className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition ${mobileTab === tab ? 'text-slate-900 border-b-2 border-slate-900' : 'text-slate-400'}`}>
+              {tab === 'nav' ? 'Inhalte' : tab === 'editor' ? activeLabel : 'Vorschau'}
+            </button>
+          ))}
         </div>
-
-        {/* Builder Sections Overlay */}
-        <div className="p-6 flex-grow space-y-8">
-          
-          {/* General Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-4 text-slate-900 font-serif">
-              <LayoutPanelLeft className="w-5 h-5 text-sage-500" />
-              <h2 className="text-xl">Allgemein</h2>
+        <div className="flex-1 overflow-y-auto">
+          {mobileTab === 'nav' && <SectionNav active={activeSection} onSelect={id => { setActiveSection(id); setMobileTab('editor'); }} />}
+          {mobileTab === 'editor' && (
+            <div className="p-4">
+              <SectionEditor activeSection={activeSection} data={data} update={update}
+                files={files} onImageUpload={handleImageUpload}
+                onGalleryUpload={handleGalleryUpload} onGalleryRemove={removeGalleryImage}
+                onGalleryCaption={updateCaption} />
             </div>
-            <div className="bg-stone-50 rounded-[1.5rem] p-5 border border-stone-100 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Name</label>
-                <input 
-                  type="text" name="name" value={memorial.name || ''} onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-sage-400 focus:border-sage-400 focus:bg-white transition text-sm text-slate-900" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Persönliche URL (Link)</label>
-                <div className="flex bg-white rounded-xl border border-slate-200 overflow-hidden focus-within:border-sage-500 focus-within:ring-1 focus-within:ring-sage-500 transition">
-                    <span className="bg-stone-50 px-3 py-3 text-slate-400 text-xs border-r border-slate-100 flex items-center">{(process.env.NEXT_PUBLIC_APP_URL || '').replace(/^https?:\/\//, '') || 'memorize-liart.vercel.app'}/gedenken/</span>
-                    <input 
-                      type="text" name="slug" value={memorial.slug || ''} onChange={handleChange}
-                      className="w-full text-slate-900 text-sm py-3 px-3 outline-none" 
-                    />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Media Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-4 text-slate-900 font-serif">
-              <ImageIcon className="w-5 h-5 text-sage-500" />
-              <h2 className="text-xl">Titel & Profilbild</h2>
-            </div>
-            <div className="bg-stone-50 rounded-[1.5rem] p-5 border border-stone-100 space-y-5">
-              
-              <div className="w-full">
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Titelbild (16:7)</label>
-                <div className="relative w-full h-32 bg-white border-2 border-dashed border-stone-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-sage-400 transition group overflow-hidden">
-                  {uploadingField === 'title_image' ? (
-                    <Loader2 className="w-6 h-6 text-sage-500 animate-spin" />
-                  ) : memorial.title_image ? (
-                    <>
-                      <img src={memorial.title_image} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-30 transition" alt=""/>
-                      <span className="relative z-10 bg-white/90 backdrop-blur text-xs font-medium px-3 py-1 rounded-full shadow-sm text-slate-700">Bild ändern</span>
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-6 h-6 text-stone-400 mb-2 group-hover:text-sage-500 transition" />
-                      <span className="text-xs text-stone-500 font-medium tracking-wide">Klicken zum Auswählen</span>
-                    </>
-                  )}
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleImageUpload(e, 'title_image')} disabled={uploadingField !== null} />
-                </div>
-              </div>
-
-              <div className="w-full">
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1">Profilbild (1:1)</label>
-                <div className="relative w-24 h-24 bg-white border-2 border-dashed border-stone-200 rounded-[1.5rem] flex flex-col items-center justify-center cursor-pointer hover:border-sage-400 transition group overflow-hidden">
-                  {uploadingField === 'profile_image' ? (
-                     <Loader2 className="w-5 h-5 text-sage-500 animate-spin" />
-                  ) : memorial.profile_image ? (
-                    <>
-                      <img src={memorial.profile_image} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-30 transition" alt=""/>
-                      <Camera className="w-5 h-5 text-slate-700 relative z-10" />
-                    </>
-                  ) : (
-                    <Camera className="w-6 h-6 text-stone-400 group-hover:text-sage-500 transition" />
-                  )}
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png,image/webp" onChange={(e) => handleImageUpload(e, 'profile_image')} disabled={uploadingField !== null} />
-                </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* Dates & Locations */}
-          <section>
-            <div className="flex items-center gap-2 mb-4 text-slate-900 font-serif">
-              <Calendar className="w-5 h-5 text-sage-500" />
-              <h2 className="text-xl">Kerndaten</h2>
-            </div>
-            <div className="bg-stone-50 rounded-[1.5rem] p-5 border border-stone-100 space-y-6">
-              
-              <div className="space-y-3">
-                 <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1 flex items-center gap-1.5"><Sparkles className="w-3 h-3 text-sage-400"/> Geburt</h3>
-                 <div className="grid grid-cols-2 gap-3">
-                   <input type="date" name="birth_date" value={memorial.birth_date || ''} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-sage-400 focus:bg-white text-sm" />
-                   <input type="text" name="birth_place" placeholder="Ort (z.B. Bern)" value={memorial.birth_place || ''} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-sage-400 focus:bg-white text-sm" />
-                 </div>
-              </div>
-
-              <div className="w-full h-px bg-stone-200/60"></div>
-
-              <div className="space-y-3">
-                 <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2 ml-1 flex items-center gap-1.5"><BadgeCheck className="w-3 h-3 text-slate-400"/> Tod</h3>
-                 <div className="grid grid-cols-2 gap-3">
-                   <input type="date" name="death_date" value={memorial.death_date || ''} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-sage-400 focus:bg-white text-sm" />
-                   <input type="text" name="death_place" placeholder="Ort (z.B. Zürich)" value={memorial.death_place || ''} onChange={handleChange} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-sage-400 focus:bg-white text-sm" />
-                 </div>
-              </div>
-
-            </div>
-          </section>
-
-          {/* Biography */}
-          <section>
-            <div className="flex items-center gap-2 mb-4 text-slate-900 font-serif">
-              <AlignLeft className="w-5 h-5 text-sage-500" />
-              <h2 className="text-xl">Lebensgeschichte</h2>
-            </div>
-            <div className="bg-stone-50 rounded-[1.5rem] p-5 border border-stone-100">
-               <textarea 
-                  name="biography" 
-                  value={memorial.biography || ''} 
-                  onChange={handleChange}
-                  placeholder="Wie würdest du dieses Leben beschreiben? Welche Momente bleiben für immer in Erinnerung?"
-                  rows={8}
-                  className="w-full px-4 py-4 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-sage-400 focus:bg-white transition text-sm text-slate-700 leading-relaxed resize-none" 
-               />
-            </div>
-          </section>
-
-          {/* Gallery */}
-          <section className="pb-10">
-            <div className="flex items-center gap-2 mb-4 text-slate-900 font-serif">
-              <ImageIcon className="w-5 h-5 text-sage-500" />
-              <h2 className="text-xl">Erinnerungs-Galerie</h2>
-            </div>
-            <div className="bg-stone-50 rounded-[1.5rem] p-5 border border-stone-100 space-y-4">
-              
-              <div className="grid grid-cols-2 gap-4">
-                 {memorial.gallery && memorial.gallery.map((img: any, idx: number) => (
-                    <div key={idx} className="bg-white rounded-xl p-2 border border-stone-200 flex flex-col shadow-sm relative group">
-                       <button onClick={() => removeGalleryImage(idx)} className="absolute top-3 right-3 bg-white/90 backdrop-blur text-red-500 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow-sm z-10 hover:bg-red-50">
-                         <Trash2 className="w-3.5 h-3.5" />
-                       </button>
-                       <div className="aspect-square rounded-lg bg-stone-100 overflow-hidden mb-2">
-                          <img src={img.url} className="w-full h-full object-cover" alt="" />
-                       </div>
-                       <input 
-                         type="text" 
-                         value={img.caption || ''} 
-                         onChange={(e) => updateGalleryCaption(idx, e.target.value)}
-                         placeholder="Kurze Beschreibung..."
-                         maxLength={60}
-                         className="text-xs px-2 py-1.5 w-full bg-stone-50 border border-transparent focus:border-sage-200 rounded outline-none transition text-slate-600"
-                       />
-                    </div>
-                 ))}
-                 
-                 <div className="aspect-square bg-white border-2 border-dashed border-stone-200 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-sage-400 transition relative">
-                    {uploadingField === 'gallery' ? (
-                       <Loader2 className="w-5 h-5 text-sage-500 animate-spin" />
-                    ) : (
-                       <>
-                         <Plus className="w-6 h-6 text-stone-400 mb-1" />
-                         <span className="text-xs text-stone-500 font-medium tracking-wide">Bild hinzufügen</span>
-                       </>
-                    )}
-                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png,image/webp" onChange={handleGalleryUpload} disabled={uploadingField !== null} />
-                 </div>
-              </div>
-
-            </div>
-          </section>
-
+          )}
+          {mobileTab === 'preview' && <PreviewMemorial data={data} />}
         </div>
-
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-100 bg-white sticky bottom-0 z-10 flex gap-3">
-          <button onClick={handleSave} disabled={isSaving} className="flex-1 bg-slate-900 text-white rounded-xl py-3.5 flex items-center justify-center gap-2 font-medium text-sm hover:bg-slate-800 transition shadow-md disabled:opacity-50">
-             <Save className="w-4 h-4" />
-             {isSaving ? 'Speichert...' : 'Entwurf speichern'}
-          </button>
-        </div>
+        <MobileSaveBar isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} onSave={handleSave} isLive={data.is_live} onUnlock={handleUnlock} isUnlocking={isUnlocking} />
       </div>
 
-      {/* RIGHT PREVIEW: Active rendered component */}
-      <div className="flex-1 bg-stone-300 relative lg:overflow-y-auto">
-        <div className="absolute inset-0 flex flex-col">
-           {/* Top bar mimicking a browser/device */}
-           <div className="h-14 bg-stone-800 flex items-center justify-between px-6 flex-shrink-0 z-20">
-              <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-red-400/20"></div>
-                 <div className="w-3 h-3 rounded-full bg-yellow-400/20"></div>
-                 <div className="w-3 h-3 rounded-full bg-green-400/20"></div>
+      {/* ── Desktop 3-column layout ── */}
+      <div className="hidden lg:flex h-screen flex-col bg-stone-100">
+        <div className="flex flex-1 overflow-hidden">
+
+          {/* Left: Section Nav */}
+          <aside className="w-56 xl:w-64 bg-white border-r border-stone-100 flex flex-col flex-shrink-0">
+            <div className="px-4 py-5 border-b border-stone-100 flex-shrink-0">
+              <Link href="/dashboard" className="flex items-center gap-2 text-slate-400 hover:text-slate-700 transition mb-3">
+                <ChevronLeft className="w-4 h-4" /><span className="text-xs font-medium">Dashboard</span>
+              </Link>
+              <span className="font-serif text-base text-slate-900">{data.name || 'Gedenkseite'}</span>
+              <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Inhalte bearbeiten</p>
+            </div>
+            <SectionNav active={activeSection} onSelect={setActiveSection} />
+            <div className="mt-auto p-4 border-t border-stone-100">
+              {data.is_live ? (
+                <a href={`${process.env.NEXT_PUBLIC_APP_URL || ''}/gedenken/${data.slug}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs text-sage-600 hover:text-sage-700 transition">
+                  <ExternalLink className="w-3 h-3" /> Gedenkseite ansehen
+                </a>
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs text-amber-500">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Nicht veröffentlicht
+                </span>
+              )}
+            </div>
+          </aside>
+
+          {/* Middle: Editor */}
+          <main className="w-[400px] xl:w-[460px] flex-shrink-0 bg-stone-50 border-r border-stone-200 flex flex-col overflow-y-auto">
+            <div className="px-5 py-4 bg-white border-b border-stone-100 flex-shrink-0 flex items-center justify-between">
+              <div>
+                <h2 className="font-serif text-slate-900 text-lg">{activeLabel}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Änderungen sofort in der Vorschau sichtbar</p>
               </div>
-              <div className="bg-stone-700/50 rounded-full px-4 py-1 text-xs text-stone-400 font-medium tracking-wide flex items-center gap-2">
-                 <span>{(process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app').replace(/^https?:\/\//, '')}/gedenken/{memorial.slug}</span>
-              </div>
-              {!memorial.is_live && (
-                <button 
-                  onClick={handleUnlock}
-                  disabled={isUnlocking}
-                  className="bg-sage-600 hover:bg-sage-500 text-white text-xs px-4 py-1.5 rounded-full font-medium shadow-md transition whitespace-nowrap disabled:opacity-50">
-                  {isUnlocking ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}
-                  Freischalten & Veröffentlichen (49.-)
+              {!data.is_live && (
+                <button onClick={handleUnlock} disabled={isUnlocking}
+                  className="flex items-center gap-1.5 bg-sage-600 hover:bg-sage-500 text-white text-xs font-semibold px-3 py-2 rounded-xl transition shadow-sm disabled:opacity-50 flex-shrink-0 ml-3">
+                  {isUnlocking ? <Loader2 className="w-3 h-3 animate-spin" /> : '🔓'}
+                  Freischalten (49.–)
                 </button>
               )}
-           </div>
+            </div>
+            <div className="p-4 flex-1">
+              <SectionEditor activeSection={activeSection} data={data} update={update}
+                files={files} onImageUpload={handleImageUpload}
+                onGalleryUpload={handleGalleryUpload} onGalleryRemove={removeGalleryImage}
+                onGalleryCaption={updateCaption} />
+            </div>
+          </main>
 
-           {/* The actual preview scroll container */}
-           <div className="flex-1 overflow-y-auto relative w-full h-full flex justify-center selection:bg-sage-200 hidden-scrollbar">
-              <div className="w-full h-full bg-white max-w-[600px] xl:max-w-none shadow-2xl relative">
-                  {/* Wir nutzen eine skalierte Vorschau oder direkt 1:1. 1:1 ist oft schöner für den Desktop-Preview */}
-                  <PreviewMemorial data={memorial} />
+          {/* Right: Preview */}
+          <div className="flex-1 flex flex-col overflow-hidden bg-stone-300">
+            <div className="h-10 bg-stone-800 flex items-center justify-between px-5 flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                {[0,1,2].map(i => <div key={i} className="w-2.5 h-2.5 rounded-full bg-white/10" />)}
               </div>
-           </div>
+              <span className="text-[11px] text-stone-400 font-medium truncate">
+                {(process.env.NEXT_PUBLIC_APP_URL || 'https://memorize-liart.vercel.app').replace(/^https?:\/\//, '')}/gedenken/{data.slug}
+              </span>
+              <div />
+            </div>
+            <div className="flex-1 overflow-y-auto bg-white">
+              <PreviewMemorial data={data} />
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Mobile Notice (Builder is desktop-centric for now) */}
-      <div className="fixed inset-0 z-50 bg-stone-50 flex lg:hidden flex-col items-center justify-center p-8 text-center">
-         <LayoutPanelLeft className="w-12 h-12 text-slate-300 mb-4" />
-         <h2 className="text-xl font-serif text-slate-900 mb-2">Bitte Laptop nutzen</h2>
-         <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
-           Der Page Builder ist für grössere Bildschirme optimiert, damit du die Gedenkseite parallel zur Bearbeitung im Detail sehen kannst.
-         </p>
-         <Link href="/dashboard" className="mt-8 px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-medium">Zurück zur Übersicht</Link>
+        {/* Fixed Save Bar */}
+        <DesktopSaveBar isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} onSave={handleSave}
+          isLive={data.is_live} onUnlock={handleUnlock} isUnlocking={isUnlocking} slug={data.slug} />
       </div>
+    </>
+  );
+}
 
+// ── Section Navigation ─────────────────────────────────────────────────────────
+function SectionNav({ active, onSelect }: { active: SectionId; onSelect: (id: SectionId) => void }) {
+  return (
+    <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
+      {SECTIONS.map(s => {
+        const Icon = s.icon;
+        const isActive = s.id === active;
+        return (
+          <button key={s.id} onClick={() => onSelect(s.id)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition text-left ${isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-stone-50 hover:text-slate-900'}`}>
+            <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+            <span className="flex-1 font-medium">{s.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ── Save Status ────────────────────────────────────────────────────────────────
+function SaveStatus({ isSaving, isDirty, savedAt }: { isSaving: boolean; isDirty: boolean; savedAt: Date | null }) {
+  if (isSaving) return <span className="flex items-center gap-1.5 text-xs text-slate-500"><Loader2 className="w-3 h-3 animate-spin" />Wird gespeichert…</span>;
+  if (isDirty)  return <span className="flex items-center gap-1.5 text-xs text-amber-600"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" />Nicht gespeicherte Änderungen</span>;
+  if (savedAt)  return <span className="flex items-center gap-1.5 text-xs text-green-600"><CheckCircle2 className="w-3 h-3" />Entwurf gespeichert</span>;
+  return <span className="text-xs text-slate-400">Bereit</span>;
+}
+
+// ── Save Bars ──────────────────────────────────────────────────────────────────
+interface SaveBarProps { isSaving: boolean; isDirty: boolean; savedAt: Date | null; onSave: () => void; isLive: boolean; onUnlock: () => void; isUnlocking: boolean; slug?: string; }
+
+function DesktopSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, isUnlocking, slug }: SaveBarProps) {
+  return (
+    <div className="h-14 bg-white border-t border-stone-200 px-6 flex items-center justify-between flex-shrink-0">
+      <SaveStatus isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} />
+      <div className="flex items-center gap-3">
+        {isLive && slug && (
+          <a href={`${process.env.NEXT_PUBLIC_APP_URL || ''}/gedenken/${slug}`} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition px-3 py-2 rounded-xl hover:bg-stone-50">
+            <Eye className="w-4 h-4" /> Vorschau
+          </a>
+        )}
+        {!isLive && (
+          <button onClick={onUnlock} disabled={isUnlocking}
+            className="flex items-center gap-2 bg-sage-600 hover:bg-sage-500 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm disabled:opacity-50">
+            {isUnlocking ? <Loader2 className="w-4 h-4 animate-spin" /> : '🔓'} Freischalten (CHF 49.–)
+          </button>
+        )}
+        <button onClick={onSave} disabled={isSaving}
+          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-sm disabled:opacity-50">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Entwurf speichern
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MobileSaveBar({ isSaving, isDirty, savedAt, onSave, isLive, onUnlock, isUnlocking }: SaveBarProps) {
+  return (
+    <div className="bg-white border-t border-stone-200 px-4 py-3 flex items-center justify-between flex-shrink-0 gap-2">
+      <SaveStatus isSaving={isSaving} isDirty={isDirty} savedAt={savedAt} />
+      <div className="flex items-center gap-2">
+        {!isLive && (
+          <button onClick={onUnlock} disabled={isUnlocking}
+            className="flex items-center gap-1.5 bg-sage-600 text-white text-xs font-semibold px-3 py-2.5 rounded-xl transition disabled:opacity-50">
+            🔓 49.–
+          </button>
+        )}
+        <button onClick={onSave} disabled={isSaving}
+          className="flex items-center gap-2 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition disabled:opacity-50">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Speichern
+        </button>
+      </div>
     </div>
   );
 }
