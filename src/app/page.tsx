@@ -1,3 +1,13 @@
 import { redirect } from 'next/navigation';
-const WP = process.env.WP_URL || 'https://memorize.mainwebsite.ch';
-export default function RootPage() { redirect(WP); }
+import { createClient } from '@/utils/supabase/server';
+
+export default async function RootPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect('/dashboard');
+  } else {
+    redirect('/auth/login');
+  }
+}
